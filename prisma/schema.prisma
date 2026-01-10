@@ -13,14 +13,69 @@ datasource db {
   provider = "postgresql"
 }
 
+enum HabitType {
+  once_per_day
+  repeatable
+}
+
 model User {
-  id        String   @id @default(cuid())
-  workosId  String   @unique
-  email     String   @unique
-  firstName String?
-  lastName  String?
+  id                String   @id @default(uuid())
+  workosId          String   @unique
+  email             String   @unique
+  firstName         String?
+  lastName          String?
+  appliedTemplateId String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  appliedTemplate  HabitTemplate?    @relation("AppliedTemplate", fields: [appliedTemplateId], references: [id])
+  habitTemplates   HabitTemplate[]
+  habitCompletions HabitCompletion[]
+
+  @@map("users")
+}
+
+model HabitTemplate {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("users")
+  user           User    @relation(fields: [userId], references: [id])
+  habits         Habit[]
+  appliedByUsers User[]  @relation("AppliedTemplate")
+
+  @@map("habit_templates")
+}
+
+model Habit {
+  id          String    @id @default(uuid())
+  templateId  String
+  icon        String
+  name        String
+  description String?
+  type        HabitType @default(once_per_day)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  template    HabitTemplate     @relation(fields: [templateId], references: [id])
+  completions HabitCompletion[]
+
+  @@map("habits")
+}
+
+model HabitCompletion {
+  id          String   @id @default(uuid())
+  userId      String
+  habitId     String
+  completedAt DateTime @default(now())
+  date        String
+  count       Int      @default(1) // For repeatable habits, tracks how many times completed on this date
+
+  user  User  @relation(fields: [userId], references: [id])
+  habit Habit @relation(fields: [habitId], references: [id])
+
+  @@unique([userId, habitId, date])
+  @@map("habit_completions")
 }

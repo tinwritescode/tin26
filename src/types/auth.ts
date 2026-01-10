@@ -1,12 +1,7 @@
-export interface User {
-  id: string
-  workosId: string
-  email: string
-  firstName: string | null
-  lastName: string | null
-  createdAt: Date
-  updatedAt: Date
-}
+import type { RouterOutput } from '../lib/trpc'
+import type { User as PrismaUser } from '@prisma/client'
+
+export type User = PrismaUser
 
 export interface JWTPayload {
   userId: string
@@ -15,7 +10,6 @@ export interface JWTPayload {
 }
 
 export interface AuthContextType {
-  user: User | null
   isLoading: boolean
   login: () => void
   logout: () => void

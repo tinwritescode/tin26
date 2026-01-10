@@ -1,64 +1,65 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import type { ReactNode } from 'react'
-import type { AuthContextType, User } from '../types/auth.js'
+import { proxy, subscribe } from 'valtio'
 
 const TOKEN_KEY = 'auth_token'
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+export const authStore = proxy({
+  isLoading: true,
+  accessToken: null as string | null,
+})
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  const getToken = (): string | null => {
-    if (typeof window === 'undefined') return null
-    return localStorage.getItem(TOKEN_KEY)
-  }
-
-  const setToken = (token: string): void => {
-    if (typeof window === 'undefined') return
-    localStorage.setItem(TOKEN_KEY, token)
-    // Token is set, user will be fetched on next render via useEffect
-  }
-
-  const login = (): void => {
-    // Redirect to backend login endpoint (will be proxied)
-    window.location.href = '/api/auth/login'
-  }
-
-  const logout = (): void => {
-    if (typeof window === 'undefined') return
-    localStorage.removeItem(TOKEN_KEY)
-    setUser(null)
-  }
-
-  // Note: User fetching should be done via tRPC in components that need it
-  // This context just manages the token
-  useEffect(() => {
-    const token = getToken()
-    if (!token) {
-      setIsLoading(false)
-    } else {
-      setIsLoading(false)
-    }
-  }, [])
-
-  const value: AuthContextType = {
-    user,
-    isLoading,
-    login,
-    logout,
-    getToken,
-    setToken,
-  }
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+export const getToken = (): string | null => {
+  if (typeof window === 'undefined') return null
+  return authStore.accessToken
 }
 
-export function useAuth(): AuthContextType {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
+export const setToken = (token: string): void => {
+  if (typeof window === 'undefined') return
+  authStore.accessToken = token
+  localStorage.setItem(TOKEN_KEY, token)
+  // Token is set, user will be fetched on next render
+}
+
+export const login = (): void => {
+  // Redirect to backend login endpoint (will be proxied)
+  window.location.href = '/api/auth/login'
+}
+
+export const logout = (): void => {
+  if (typeof window === 'undefined') return
+  authStore.accessToken = null
+  localStorage.removeItem(TOKEN_KEY)
+  // Navigate to home page to trigger re-render and show landing page
+  window.location.href = '/'
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  // This provider just manages the token initialization
+  useEffect(() => {
+    // Initialize accessToken from localStorage
+    if (typeof window !== 'undefined') {
+      const storedToken = localStorage.getItem(TOKEN_KEY)
+      authStore.accessToken = storedToken
+    }
+    authStore.isLoading = false
+  }, [])
+
+  // Persist accessToken changes to localStorage
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const unsubscribe = subscribe(authStore, () => {
+      const token = authStore.accessToken
+      if (token) {
+        localStorage.setItem(TOKEN_KEY, token)
+      } else {
+        localStorage.removeItem(TOKEN_KEY)
+      }
+    })
+
+    return unsubscribe
+  }, [])
+
+  return <>{children}</>
 }

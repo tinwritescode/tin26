@@ -53,4 +53,30 @@ export class UserRepository implements IUserRepository {
       },
     })
   }
+
+  async updateAppliedTemplate(
+    userId: string,
+    templateId: string | null,
+  ): Promise<User> {
+    // If templateId is provided, verify it exists and belongs to user
+    if (templateId !== null) {
+      const template = await this.prisma.habitTemplate.findFirst({
+        where: {
+          id: templateId,
+          userId,
+        },
+      })
+
+      if (!template) {
+        throw new Error('Template not found or access denied')
+      }
+    }
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        appliedTemplateId: templateId,
+      },
+    })
+  }
 }
