@@ -96,4 +96,87 @@ export interface IHabitCompletionRepository {
     userId: string,
     date: string,
   ) => Promise<string[]>
+  getStatisticsForUser: (
+    userId: string,
+    templateId: string,
+    startDate?: string,
+    endDate?: string,
+  ) => Promise<{
+    totalHabits: number
+    totalCompletions: number
+    totalDaysTracked: number
+    overallCompletionRate: number
+    currentStreak: number
+    longestStreak: number
+    averageCompletionsPerDay: number
+    habits: Array<{
+      habitId: string
+      habitName: string
+      habitIcon: string
+      totalCompletions: number
+      completionRate: number
+      currentStreak: number
+      longestStreak: number
+      firstCompletionDate: string | null
+      lastCompletionDate: string | null
+    }>
+  }>
+  getWeeklyCompletions: (
+    userId: string,
+    templateId: string,
+    weeks: number,
+  ) => Promise<
+    Array<{
+      weekStart: string
+      weekEnd: string
+      totalCompletions: number
+      completionRate: number
+      habitsCompleted: Array<{
+        habitId: string
+        habitName: string
+        daysCompleted: number
+      }>
+    }>
+  >
+  getMonthlyCompletions: (
+    userId: string,
+    templateId: string,
+    months: number,
+  ) => Promise<
+    Array<{
+      month: string
+      monthName: string
+      totalCompletions: number
+      completionRate: number
+      averageCompletionsPerDay: number
+      bestDay: { date: string; completions: number } | null
+    }>
+  >
+  calculateStreaks: (
+    userId: string,
+    templateId: string,
+  ) => Promise<
+    Array<{
+      habitId: string
+      habitName: string
+      habitIcon: string
+      currentStreak: number
+      longestStreak: number
+      streakStartDate: string | null
+      lastCompletionDate: string | null
+    }>
+  >
+  getCompletionCalendar: (
+    userId: string,
+    templateId: string,
+    year: number,
+    habitId?: string,
+  ) => Promise<{
+    year: number
+    data: Array<{
+      date: string
+      completions: number
+      habits: Array<{ habitId: string; habitName: string }>
+    }>
+  }>
 }

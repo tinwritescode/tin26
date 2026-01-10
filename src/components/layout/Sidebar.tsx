@@ -1,4 +1,4 @@
-import { Home, Target, LayoutList } from 'lucide-react'
+import { Home, Target, LayoutList, BarChart3 } from 'lucide-react'
 import { Link, useLocation } from '@tanstack/react-router'
 
 interface SidebarProps {
@@ -17,6 +17,12 @@ export function Sidebar({ activeItem }: SidebarProps) {
       label: 'Templates',
       icon: LayoutList,
       path: '/templates',
+    },
+    {
+      id: 'statistics',
+      label: 'Statistics',
+      icon: BarChart3,
+      path: '/statistics',
     },
     // AI PROMPT: Build a comprehensive Habits tracking system
     //

@@ -43,6 +43,30 @@ const toggleCompletionSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 })
 
+const dateRangeSchema = z.object({
+  startDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
+  endDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
+})
+
+const weeksSchema = z.object({
+  weeks: z.number().int().min(1).max(52).default(8),
+})
+
+const monthsSchema = z.object({
+  months: z.number().int().min(1).max(24).default(6),
+})
+
+const calendarSchema = z.object({
+  year: z.number().int().min(2020).max(2100).default(new Date().getFullYear()),
+  habitId: z.string().cuid().optional(),
+})
+
 export const habitsRouter = router({
   // Template Management
   getTemplates: protectedProcedure.query(async ({ ctx }) => {
@@ -136,15 +160,11 @@ export const habitsRouter = router({
     .input(updateHabitSchema)
     .mutation(async ({ ctx, input }) => {
       try {
-        return await ctx.habitRepository.update(
-          input.habitId,
-          ctx.user.id,
-          {
-            icon: input.icon,
-            name: input.name,
-            description: input.description,
-          },
-        )
+        return await ctx.habitRepository.update(input.habitId, ctx.user.id, {
+          icon: input.icon,
+          name: input.name,
+          description: input.description,
+        })
       } catch (error) {
         throw new TRPCError({
           code: 'NOT_FOUND',
@@ -202,7 +222,9 @@ export const habitsRouter = router({
         throw new TRPCError({
           code: 'BAD_REQUEST',
           message:
-            error instanceof Error ? error.message : 'Failed to set active template',
+            error instanceof Error
+              ? error.message
+              : 'Failed to set active template',
         })
       }
     }),
@@ -242,5 +264,90 @@ export const habitsRouter = router({
         completed: completion !== null,
         completion,
       }
+    }),
+
+  // Statistics
+  getHabitStatistics: protectedProcedure
+    .input(dateRangeSchema)
+    .query(async ({ ctx, input }) => {
+      if (!ctx.user.appliedTemplateId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'No active template',
+        })
+      }
+
+      return ctx.habitCompletionRepository.getStatisticsForUser(
+        ctx.user.id,
+        ctx.user.appliedTemplateId,
+        input.startDate,
+        input.endDate,
+      )
+    }),
+
+  getWeeklyStats: protectedProcedure
+    .input(weeksSchema)
+    .query(async ({ ctx, input }) => {
+      if (!ctx.user.appliedTemplateId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'No active template',
+        })
+      }
+
+      return ctx.habitCompletionRepository.getWeeklyCompletions(
+        ctx.user.id,
+        ctx.user.appliedTemplateId,
+        input.weeks,
+      )
+    }),
+
+  getMonthlyStats: protectedProcedure
+    .input(monthsSchema)
+    .query(async ({ ctx, input }) => {
+      if (!ctx.user.appliedTemplateId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'No active template',
+        })
+      }
+
+      return ctx.habitCompletionRepository.getMonthlyCompletions(
+        ctx.user.id,
+        ctx.user.appliedTemplateId,
+        input.months,
+      )
+    }),
+
+  getHabitStreaks: protectedProcedure.query(async ({ ctx }) => {
+    if (!ctx.user.appliedTemplateId) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'No active template',
+      })
+    }
+
+    return ctx.habitCompletionRepository.calculateStreaks(
+      ctx.user.id,
+      ctx.user.appliedTemplateId,
+    )
+  }),
+
+  getCompletionCalendar: protectedProcedure
+    .input(calendarSchema)
+    .query(async ({ ctx, input }) => {
+      if (!ctx.user.appliedTemplateId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'No active template',
+        })
+      }
+
+      return ctx.habitCompletionRepository.getCompletionCalendar(
+        ctx.user.id,
+        ctx.user.appliedTemplateId,
+        input.year,
+        input.habitId,
+      )
     }),
 })

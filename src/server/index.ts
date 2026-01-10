@@ -31,7 +31,33 @@ app.use(
   }),
 )
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`)
   console.log(`📡 tRPC endpoint: http://localhost:${PORT}/trpc`)
+})
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason)
+})
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error)
+  process.exit(1)
+})
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully')
+  server.close(() => {
+    process.exit(0)
+  })
+})
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received, shutting down gracefully')
+  server.close(() => {
+    process.exit(0)
+  })
 })
