@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useEffect } from 'react'
-import { useAuth } from '../../lib/auth'
+import { Loader2 } from 'lucide-react'
+import { useAuth } from '../../common/hooks/useAuth'
 
 export const Route = createFileRoute('/auth/callback')({
   component: Callback,
@@ -42,7 +43,7 @@ function Callback() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="text-center">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+        <Loader2 className="inline-block h-8 w-8 animate-spin text-indigo-600" />
         <p className="mt-4 text-gray-600">Completing authentication...</p>
       </div>
     </div>

@@ -3,7 +3,12 @@ import { TYPES as ServiceTypes } from '../services/types.js'
 import { TYPES as RepositoryTypes } from '../repositories/types.js'
 import type { CreateExpressContextOptions } from '@trpc/server/adapters/express'
 import type { IJwtService } from '../services/interfaces.js'
-import type { IUserRepository } from '../repositories/interfaces.js'
+import type {
+  IUserRepository,
+  IHabitTemplateRepository,
+  IHabitRepository,
+  IHabitCompletionRepository,
+} from '../repositories/interfaces.js'
 import type { User } from '../../types/auth.js'
 
 export async function createContext(opts?: CreateExpressContextOptions) {
@@ -11,6 +16,15 @@ export async function createContext(opts?: CreateExpressContextOptions) {
   const jwtService = container.get<IJwtService>(ServiceTypes.JwtService)
   const userRepository = container.get<IUserRepository>(
     RepositoryTypes.UserRepository,
+  )
+  const habitTemplateRepository = container.get<IHabitTemplateRepository>(
+    RepositoryTypes.HabitTemplateRepository,
+  )
+  const habitRepository = container.get<IHabitRepository>(
+    RepositoryTypes.HabitRepository,
+  )
+  const habitCompletionRepository = container.get<IHabitCompletionRepository>(
+    RepositoryTypes.HabitCompletionRepository,
   )
 
   let user: User | null = null
@@ -35,6 +49,9 @@ export async function createContext(opts?: CreateExpressContextOptions) {
   return {
     jwtService,
     userRepository,
+    habitTemplateRepository,
+    habitRepository,
+    habitCompletionRepository,
     user,
     isAuthenticated,
   }

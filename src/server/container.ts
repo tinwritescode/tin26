@@ -6,6 +6,9 @@ import { TYPES as ControllerTypes } from './controllers/types.js'
 import { WorkOSService } from './services/WorkOSService.js'
 import { JwtService } from './services/JwtService.js'
 import { UserRepository } from './repositories/UserRepository.js'
+import { HabitTemplateRepository } from './repositories/HabitTemplateRepository.js'
+import { HabitRepository } from './repositories/HabitRepository.js'
+import { HabitCompletionRepository } from './repositories/HabitCompletionRepository.js'
 import { AuthController } from './controllers/AuthController.js'
 import { HealthController } from './controllers/HealthController.js'
 import { prisma } from './db/prisma.js'
@@ -32,6 +35,18 @@ container
 container
   .bind<UserRepository>(RepositoryTypes.UserRepository)
   .to(UserRepository)
+  .inSingletonScope()
+container
+  .bind<HabitTemplateRepository>(RepositoryTypes.HabitTemplateRepository)
+  .to(HabitTemplateRepository)
+  .inSingletonScope()
+container
+  .bind<HabitRepository>(RepositoryTypes.HabitRepository)
+  .to(HabitRepository)
+  .inSingletonScope()
+container
+  .bind<HabitCompletionRepository>(RepositoryTypes.HabitCompletionRepository)
+  .to(HabitCompletionRepository)
   .inSingletonScope()
 
 // Bind controllers as singletons
