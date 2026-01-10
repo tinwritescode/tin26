@@ -71,6 +71,16 @@ export class AuthController implements IAuthController {
         })
       }
 
+      // Store WorkOS sealed session in cookie if available
+      if (workosUser.sealedSession) {
+        res.cookie('wos-session', workosUser.sealedSession, {
+          path: '/',
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+        })
+      }
+
       // Generate JWT token
       const token = this.jwtService.generateToken({
         userId: user.id,
@@ -109,5 +119,36 @@ export class AuthController implements IAuthController {
         .status(500)
         .redirect(`${frontendUrl}/login?error=authentication_failed`)
     }
+  }
+
+  async logout(req: Request, res: Response): Promise<void> {
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000'
+    const logoutRedirectUri = `${frontendUrl}/`
+
+    // Check if there's a WorkOS session cookie (for session-based flows)
+    const workosSessionCookie = req.cookies['wos-session']
+    let logoutUrl: string | null = null
+
+    if (workosSessionCookie) {
+      // Try to get logout URL from WorkOS session
+      logoutUrl = await this.workosService.getLogoutUrlFromSession(
+        workosSessionCookie,
+        logoutRedirectUri,
+      )
+      // Clear the WorkOS session cookie if it exists
+      res.clearCookie('wos-session')
+    }
+
+    // If no session-based logout URL, use the general logout URL
+    // This will redirect to WorkOS to clear any cookies they set during hosted UI login
+    // For JWT flows, the main logout (clearing JWT) is already done client-side
+    if (!logoutUrl) {
+      logoutUrl = this.workosService.getLogoutUrl(
+        logoutRedirectUri,
+        WORKOS_CLIENT_ID,
+      )
+    }
+
+    res.redirect(logoutUrl)
   }
 }

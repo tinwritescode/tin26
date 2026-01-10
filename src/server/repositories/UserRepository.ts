@@ -42,6 +42,12 @@ export class UserRepository implements IUserRepository {
       email?: string
       firstName?: string | null
       lastName?: string | null
+      avatar?: string | null
+      coverPhoto?: string | null
+      bio?: string | null
+      location?: string | null
+      work?: string | null
+      education?: string | null
     },
   ): Promise<User> {
     return this.prisma.user.update({
@@ -50,6 +56,12 @@ export class UserRepository implements IUserRepository {
         ...(data.email && { email: data.email }),
         ...(data.firstName !== undefined && { firstName: data.firstName }),
         ...(data.lastName !== undefined && { lastName: data.lastName }),
+        ...(data.avatar !== undefined && { avatar: data.avatar }),
+        ...(data.coverPhoto !== undefined && { coverPhoto: data.coverPhoto }),
+        ...(data.bio !== undefined && { bio: data.bio }),
+        ...(data.location !== undefined && { location: data.location }),
+        ...(data.work !== undefined && { work: data.work }),
+        ...(data.education !== undefined && { education: data.education }),
       },
     })
   }

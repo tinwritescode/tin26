@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as StatisticsRouteImport } from './routes/statistics'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HabitsRouteImport } from './routes/habits'
 import { Route as IndexRouteImport } from './routes/index'
@@ -24,6 +25,11 @@ const TemplatesRoute = TemplatesRouteImport.update({
 const StatisticsRoute = StatisticsRouteImport.update({
   id: '/statistics',
   path: '/statistics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/habits': typeof HabitsRoute
   '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/habits': typeof HabitsRoute
   '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/habits': typeof HabitsRoute
   '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -78,6 +87,7 @@ export interface FileRouteTypes {
     | '/'
     | '/habits'
     | '/login'
+    | '/profile'
     | '/statistics'
     | '/templates'
     | '/auth/callback'
@@ -86,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/habits'
     | '/login'
+    | '/profile'
     | '/statistics'
     | '/templates'
     | '/auth/callback'
@@ -94,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/habits'
     | '/login'
+    | '/profile'
     | '/statistics'
     | '/templates'
     | '/auth/callback'
@@ -103,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   HabitsRoute: typeof HabitsRoute
   LoginRoute: typeof LoginRoute
+  ProfileRoute: typeof ProfileRoute
   StatisticsRoute: typeof StatisticsRoute
   TemplatesRoute: typeof TemplatesRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
@@ -122,6 +135,13 @@ declare module '@tanstack/react-router' {
       path: '/statistics'
       fullPath: '/statistics'
       preLoaderRoute: typeof StatisticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -159,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   HabitsRoute: HabitsRoute,
   LoginRoute: LoginRoute,
+  ProfileRoute: ProfileRoute,
   StatisticsRoute: StatisticsRoute,
   TemplatesRoute: TemplatesRoute,
   AuthCallbackRoute: AuthCallbackRoute,

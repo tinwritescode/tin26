@@ -3,5 +3,6 @@ export const TYPES = {
   HabitTemplateRepository: Symbol.for('HabitTemplateRepository'),
   HabitRepository: Symbol.for('HabitRepository'),
   HabitCompletionRepository: Symbol.for('HabitCompletionRepository'),
+  PostRepository: Symbol.for('PostRepository'),
   PrismaClient: Symbol.for('PrismaClient'),
 } as const

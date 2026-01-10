@@ -260,10 +260,28 @@ function AnchoredToasts() {
   );
 }
 
+function useToast() {
+  return {
+    toast: (options: {
+      title: string
+      description?: string
+      type?: 'success' | 'error' | 'info' | 'warning' | 'loading'
+      variant?: 'default' | 'destructive'
+    }) => {
+      toastManager.add({
+        title: options.title,
+        description: options.description,
+        type: options.variant === 'destructive' ? 'error' : options.type || 'info',
+      })
+    },
+  }
+}
+
 export {
   ToastProvider,
   type ToastPosition,
   toastManager,
   AnchoredToastProvider,
   anchoredToastManager,
+  useToast,
 };

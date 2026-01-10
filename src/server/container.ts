@@ -9,6 +9,7 @@ import { UserRepository } from './repositories/UserRepository.js'
 import { HabitTemplateRepository } from './repositories/HabitTemplateRepository.js'
 import { HabitRepository } from './repositories/HabitRepository.js'
 import { HabitCompletionRepository } from './repositories/HabitCompletionRepository.js'
+import { PostRepository } from './repositories/PostRepository.js'
 import { AuthController } from './controllers/AuthController.js'
 import { HealthController } from './controllers/HealthController.js'
 import { prisma } from './db/prisma.js'
@@ -47,6 +48,10 @@ container
 container
   .bind<HabitCompletionRepository>(RepositoryTypes.HabitCompletionRepository)
   .to(HabitCompletionRepository)
+  .inSingletonScope()
+container
+  .bind<PostRepository>(RepositoryTypes.PostRepository)
+  .to(PostRepository)
   .inSingletonScope()
 
 // Bind controllers as singletons

@@ -444,10 +444,10 @@ function StatisticsPage() {
                           key={habit.habitId}
                           className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-100"
                         >
-                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-sm">
+                          <div className="shrink-0 w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-sm">
                             {idx + 1}
                           </div>
-                          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                          <div className="shrink-0 w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
                             <Icon className="w-5 h-5 text-green-600" />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -487,7 +487,7 @@ function StatisticsPage() {
                           key={habit.habitId}
                           className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg border border-orange-100"
                         >
-                          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                          <div className="shrink-0 w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
                             <Icon className="w-5 h-5 text-orange-600" />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -560,7 +560,7 @@ function StatisticsPage() {
                           >
                             <td className="py-3 px-4">
                               <div className="flex items-center gap-2">
-                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                                <div className="shrink-0 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
                                   <Icon className="w-4 h-4 text-slate-600" />
                                 </div>
                                 <span className="font-medium text-[#050505]">

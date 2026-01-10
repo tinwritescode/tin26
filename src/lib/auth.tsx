@@ -30,8 +30,8 @@ export const logout = (): void => {
   if (typeof window === 'undefined') return
   authStore.accessToken = null
   localStorage.removeItem(TOKEN_KEY)
-  // Navigate to home page to trigger re-render and show landing page
-  window.location.href = '/'
+  // Redirect to server logout endpoint which will handle WorkOS logout
+  window.location.href = '/api/auth/logout'
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
