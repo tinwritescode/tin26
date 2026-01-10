@@ -1,21 +1,22 @@
 import { useAuth } from '../../common/hooks/useAuth'
+import { Button } from '@/components/ui/button'
 
 export function SignUpForm() {
   const { login } = useAuth()
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <h2 className="text-2xl font-bold text-[#050505] mb-4">
+    <div className="bg-card rounded-lg shadow-lg border border-border p-6">
+      <h2 className="text-2xl font-bold text-foreground mb-4">
         Create an account
       </h2>
-      <p className="text-sm text-[#65676B] mb-4">It's quick and easy.</p>
+      <p className="text-sm text-muted-foreground mb-4">It's quick and easy.</p>
 
-      <button
+      <Button
         onClick={login}
-        className="w-full py-2 text-base font-semibold text-white bg-[#42B72A] rounded hover:bg-[#36A420] transition-colors duration-200 cursor-pointer"
+        className="w-full"
       >
         Sign Up
-      </button>
+      </Button>
     </div>
   )
 }

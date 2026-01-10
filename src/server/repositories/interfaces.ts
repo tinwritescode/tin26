@@ -3,7 +3,7 @@ import type {
   HabitTemplate,
   Habit,
   HabitCompletion,
-  Prisma,
+  HabitType,
 } from '@prisma/client'
 
 export type HabitTemplateWithHabits = HabitTemplate & {
@@ -34,10 +34,7 @@ export interface IUserRepository {
 }
 
 export interface IHabitTemplateRepository {
-  findById: (
-    id: string,
-    userId: string,
-  ) => Promise<HabitTemplate | null>
+  findById: (id: string, userId: string) => Promise<HabitTemplate | null>
   findByUserId: (userId: string) => Promise<HabitTemplate[]>
   create: (data: { userId: string; name: string }) => Promise<HabitTemplate>
   update: (
@@ -61,6 +58,7 @@ export interface IHabitRepository {
       icon: string
       name: string
       description?: string | null
+      type?: HabitType
     },
     userId: string,
   ) => Promise<Habit>
@@ -71,6 +69,7 @@ export interface IHabitRepository {
       icon?: string
       name?: string
       description?: string | null
+      type?: HabitType
     },
   ) => Promise<Habit>
   delete: (id: string, userId: string) => Promise<void>
@@ -92,10 +91,19 @@ export interface IHabitCompletionRepository {
     habitId: string
     date: string
   }) => Promise<HabitCompletion | null>
+  decreaseCompletion: (data: {
+    userId: string
+    habitId: string
+    date: string
+  }) => Promise<HabitCompletion | null>
   getCompletedHabitIdsForDate: (
     userId: string,
     date: string,
   ) => Promise<string[]>
+  getCompletionCountsForDate: (
+    userId: string,
+    date: string,
+  ) => Promise<Map<string, number>>
   getStatisticsForUser: (
     userId: string,
     templateId: string,

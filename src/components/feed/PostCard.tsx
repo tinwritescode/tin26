@@ -1,4 +1,5 @@
 import { ThumbsUp, MessageCircle, Share2, MoreHorizontal } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 interface Post {
   id: string
@@ -20,38 +21,43 @@ interface PostCardProps {
 
 export function PostCard({ post }: PostCardProps) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-[#CCD0D5] mb-4">
+    <div className="bg-card rounded-lg shadow-sm border border-border mb-4">
       {/* Header */}
       <div className="p-4">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#1877F2] flex items-center justify-center text-white font-semibold cursor-pointer hover:opacity-90 transition-opacity duration-200">
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold cursor-pointer hover:opacity-90 transition-opacity duration-200">
               {post.author.avatar}
             </div>
             <div>
-              <div className="text-sm font-semibold text-[#050505] cursor-pointer hover:underline">
+              <div className="text-sm font-semibold text-foreground cursor-pointer hover:underline">
                 {post.author.name}
               </div>
-              <div className="text-xs text-[#65676B]">{post.time}</div>
+              <div className="text-xs text-muted-foreground">{post.time}</div>
             </div>
           </div>
-          <button className="p-1.5 rounded-full hover:bg-[#F0F2F5] transition-colors duration-200 cursor-pointer">
-            <MoreHorizontal className="w-5 h-5 text-[#65676B]" />
-          </button>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="rounded-full"
+            aria-label="More options"
+          >
+            <MoreHorizontal className="w-5 h-5" />
+          </Button>
         </div>
 
         {/* Content */}
-        <p className="text-sm text-[#050505] mb-3">{post.content}</p>
+        <p className="text-sm text-foreground mb-3">{post.content}</p>
 
         {/* Image placeholder */}
         {post.image && (
-          <div className="w-full h-64 bg-[#F0F2F5] rounded-lg mb-3 flex items-center justify-center text-[#65676B]">
+          <div className="w-full h-64 bg-muted rounded-lg mb-3 flex items-center justify-center text-muted-foreground">
             Image placeholder
           </div>
         )}
 
         {/* Stats */}
-        <div className="flex items-center justify-between text-xs text-[#65676B] pt-2 border-t border-[#CCD0D5]">
+        <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border">
           <div className="flex items-center gap-4">
             <span>{post.likes} likes</span>
             <span>{post.comments} comments</span>
@@ -61,20 +67,20 @@ export function PostCard({ post }: PostCardProps) {
       </div>
 
       {/* Actions */}
-      <div className="px-4 pb-2 border-t border-[#CCD0D5]">
+      <div className="px-4 pb-2 border-t border-border">
         <div className="flex items-center justify-around pt-1">
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-[#F0F2F5] transition-colors duration-200 cursor-pointer flex-1 justify-center">
-            <ThumbsUp className="w-5 h-5 text-[#65676B]" />
-            <span className="text-sm font-medium text-[#65676B]">Like</span>
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-[#F0F2F5] transition-colors duration-200 cursor-pointer flex-1 justify-center">
-            <MessageCircle className="w-5 h-5 text-[#65676B]" />
-            <span className="text-sm font-medium text-[#65676B]">Comment</span>
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-[#F0F2F5] transition-colors duration-200 cursor-pointer flex-1 justify-center">
-            <Share2 className="w-5 h-5 text-[#65676B]" />
-            <span className="text-sm font-medium text-[#65676B]">Share</span>
-          </button>
+          <Button variant="ghost" className="flex items-center gap-2 flex-1">
+            <ThumbsUp className="w-5 h-5" />
+            <span className="text-sm font-medium">Like</span>
+          </Button>
+          <Button variant="ghost" className="flex items-center gap-2 flex-1">
+            <MessageCircle className="w-5 h-5" />
+            <span className="text-sm font-medium">Comment</span>
+          </Button>
+          <Button variant="ghost" className="flex items-center gap-2 flex-1">
+            <Share2 className="w-5 h-5" />
+            <span className="text-sm font-medium">Share</span>
+          </Button>
         </div>
       </div>
     </div>

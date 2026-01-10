@@ -1,5 +1,16 @@
 import { useState, useEffect } from 'react'
-import { X } from 'lucide-react'
+import {
+  Dialog,
+  DialogPopup,
+  DialogHeader,
+  DialogTitle,
+  DialogPanel,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Field, FieldLabel, FieldError } from '@/components/ui/field'
+import { Input } from '@/components/ui/input'
+import { Form } from '@/components/ui/form'
 
 interface EditTemplateModalProps {
   isOpen: boolean
@@ -26,8 +37,6 @@ export function EditTemplateModal({
     }
   }, [isOpen, currentName])
 
-  if (!isOpen) return null
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -53,68 +62,48 @@ export function EditTemplateModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-slate-800">
-            Edit Template
-          </h2>
-          <button
-            onClick={handleClose}
-            className="p-1 rounded-lg hover:bg-slate-100 transition-colors duration-200 cursor-pointer"
-            aria-label="Close modal"
-          >
-            <X className="w-5 h-5 text-slate-600" />
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogPopup className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Edit Template</DialogTitle>
+        </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label
-              htmlFor="edit-template-name"
-              className="block text-sm font-medium text-slate-700 mb-2"
-            >
-              Template Name
-            </label>
-            <input
-              id="edit-template-name"
-              type="text"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value)
-                setError('')
-              }}
-              placeholder="e.g., Morning Routine"
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              disabled={isLoading}
-              maxLength={100}
-            />
-            {error && (
-              <p className="mt-1 text-sm text-red-600" role="alert">
-                {error}
-              </p>
-            )}
-          </div>
+        <Form onSubmit={handleSubmit}>
+          <DialogPanel>
+            <Field>
+              <FieldLabel>Template Name</FieldLabel>
+              <Input
+                id="edit-template-name"
+                type="text"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value)
+                  setError('')
+                }}
+                placeholder="e.g., Morning Routine"
+                disabled={isLoading}
+                maxLength={100}
+                aria-invalid={!!error}
+              />
+              {error && <FieldError>{error}</FieldError>}
+            </Field>
+          </DialogPanel>
 
-          <div className="flex gap-3 justify-end">
-            <button
+          <DialogFooter>
+            <Button
               type="button"
               onClick={handleClose}
-              className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors duration-200 cursor-pointer text-sm font-medium"
+              variant="outline"
               disabled={isLoading}
             >
               Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 cursor-pointer text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isLoading}
-            >
+            </Button>
+            <Button type="submit" disabled={isLoading}>
               {isLoading ? 'Saving...' : 'Save'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+            </Button>
+          </DialogFooter>
+        </Form>
+      </DialogPopup>
+    </Dialog>
   )
 }

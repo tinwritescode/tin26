@@ -29,20 +29,20 @@ export function Sidebar({ activeItem }: SidebarProps) {
     // DATABASE SCHEMA (Prisma):
     // 1. Add to User model: `appliedTemplateId String?` (nullable foreign key to HabitTemplate)
     // 2. Create HabitTemplate model:
-    //    - id (String, cuid)
+    //    - id (String, uuid)
     //    - userId (String, foreign key to User)
     //    - name (String)
     //    - createdAt, updatedAt (DateTime)
     //    - habits (Habit[], one-to-many)
     // 3. Create Habit model:
-    //    - id (String, cuid)
+    //    - id (String, uuid)
     //    - templateId (String, foreign key to HabitTemplate)
     //    - icon (String, e.g., "CheckCircle" from lucide-react)
     //    - name (String)
     //    - description (String?, optional)
     //    - createdAt, updatedAt (DateTime)
     // 4. Create HabitCompletion model:
-    //    - id (String, cuid)
+    //    - id (String, uuid)
     //    - userId (String, foreign key to User)
     //    - habitId (String, foreign key to Habit)
     //    - completedAt (DateTime, default now)

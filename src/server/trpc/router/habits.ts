@@ -1,10 +1,11 @@
 import { z } from 'zod'
 import { TRPCError } from '@trpc/server'
+import { HabitType } from '@prisma/client'
 import { protectedProcedure, router } from '../trpc.js'
 
 // Validation schemas
 const templateIdSchema = z.object({
-  templateId: z.string().cuid(),
+  templateId: z.string().min(1),
 })
 
 const createTemplateSchema = z.object({
@@ -12,34 +13,36 @@ const createTemplateSchema = z.object({
 })
 
 const updateTemplateSchema = z.object({
-  templateId: z.string().cuid(),
+  templateId: z.string().min(1),
   name: z.string().min(1).max(100),
 })
 
 const addHabitSchema = z.object({
-  templateId: z.string().cuid(),
+  templateId: z.string().min(1),
   icon: z.string().min(1),
   name: z.string().min(1).max(100),
   description: z.string().max(500).optional(),
+  type: z.nativeEnum(HabitType).default(HabitType.once_per_day),
 })
 
 const updateHabitSchema = z.object({
-  habitId: z.string().cuid(),
+  habitId: z.string().min(1),
   icon: z.string().min(1).optional(),
   name: z.string().min(1).max(100).optional(),
   description: z.string().max(500).optional(),
+  type: z.nativeEnum(HabitType).optional(),
 })
 
 const deleteHabitSchema = z.object({
-  habitId: z.string().cuid(),
+  habitId: z.string().min(1),
 })
 
 const setActiveTemplateSchema = z.object({
-  templateId: z.string().cuid().nullable(),
+  templateId: z.string().min(1).nullable(),
 })
 
 const toggleCompletionSchema = z.object({
-  habitId: z.string().cuid(),
+  habitId: z.string().min(1),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 })
 
@@ -64,7 +67,7 @@ const monthsSchema = z.object({
 
 const calendarSchema = z.object({
   year: z.number().int().min(2020).max(2100).default(new Date().getFullYear()),
-  habitId: z.string().cuid().optional(),
+  habitId: z.string().min(1).optional(),
 })
 
 export const habitsRouter = router({
@@ -142,6 +145,7 @@ export const habitsRouter = router({
             icon: input.icon,
             name: input.name,
             description: input.description,
+            type: input.type,
           },
           ctx.user.id,
         )
@@ -164,6 +168,7 @@ export const habitsRouter = router({
           icon: input.icon,
           name: input.name,
           description: input.description,
+          type: input.type,
         })
       } catch (error) {
         throw new TRPCError({
@@ -238,6 +243,17 @@ export const habitsRouter = router({
     )
   }),
 
+  getTodaysCompletionCounts: protectedProcedure.query(async ({ ctx }) => {
+    const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
+    const countsMap =
+      await ctx.habitCompletionRepository.getCompletionCountsForDate(
+        ctx.user.id,
+        today,
+      )
+    // Convert Map to object for JSON serialization
+    return Object.fromEntries(countsMap)
+  }),
+
   toggleHabitCompletion: protectedProcedure
     .input(toggleCompletionSchema)
     .mutation(async ({ ctx, input }) => {
@@ -259,6 +275,36 @@ export const habitsRouter = router({
         habitId: input.habitId,
         date: input.date,
       })
+
+      return {
+        completed: completion !== null,
+        completion,
+      }
+    }),
+
+  decreaseHabitCompletion: protectedProcedure
+    .input(toggleCompletionSchema)
+    .mutation(async ({ ctx, input }) => {
+      // Verify habit ownership through template
+      const habit = await ctx.habitRepository.findById(
+        input.habitId,
+        ctx.user.id,
+      )
+
+      if (!habit) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Habit not found or access denied',
+        })
+      }
+
+      const completion = await ctx.habitCompletionRepository.decreaseCompletion(
+        {
+          userId: ctx.user.id,
+          habitId: input.habitId,
+          date: input.date,
+        },
+      )
 
       return {
         completed: completion !== null,

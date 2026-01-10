@@ -13,8 +13,13 @@ datasource db {
   provider = "postgresql"
 }
 
+enum HabitType {
+  once_per_day
+  repeatable
+}
+
 model User {
-  id                String   @id @default(cuid())
+  id                String   @id @default(uuid())
   workosId          String   @unique
   email             String   @unique
   firstName         String?
@@ -31,7 +36,7 @@ model User {
 }
 
 model HabitTemplate {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid())
   userId    String
   name      String
   createdAt DateTime @default(now())
@@ -45,13 +50,14 @@ model HabitTemplate {
 }
 
 model Habit {
-  id          String   @id @default(cuid())
+  id          String    @id @default(uuid())
   templateId  String
   icon        String
   name        String
   description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  type        HabitType @default(once_per_day)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   template    HabitTemplate     @relation(fields: [templateId], references: [id])
   completions HabitCompletion[]
@@ -60,11 +66,12 @@ model Habit {
 }
 
 model HabitCompletion {
-  id          String   @id @default(cuid())
+  id          String   @id @default(uuid())
   userId      String
   habitId     String
   completedAt DateTime @default(now())
   date        String
+  count       Int      @default(1) // For repeatable habits, tracks how many times completed on this date
 
   user  User  @relation(fields: [userId], references: [id])
   habit Habit @relation(fields: [habitId], references: [id])

@@ -1,6 +1,7 @@
 import { inject, injectable } from 'inversify'
 import { TYPES } from './types.js'
 import type { PrismaClient, HabitCompletion } from '@prisma/client'
+import { HabitType } from '@prisma/client'
 import type { IHabitCompletionRepository } from './interfaces.js'
 
 @injectable()
@@ -46,6 +47,16 @@ export class HabitCompletionRepository
     habitId: string
     date: string
   }): Promise<HabitCompletion | null> {
+    // Get habit to check its type
+    const habit = await this.prisma.habit.findUnique({
+      where: { id: data.habitId },
+      select: { type: true },
+    })
+
+    if (!habit) {
+      throw new Error('Habit not found')
+    }
+
     // Check if completion exists
     const existing = await this.findByHabitIdAndDate(
       data.habitId,
@@ -53,8 +64,94 @@ export class HabitCompletionRepository
       data.date,
     )
 
-    if (existing) {
-      // Delete if exists (toggle off)
+    // For repeatable habits, increment count instead of toggling
+    if (habit.type === HabitType.repeatable) {
+      if (existing) {
+        // Increment count
+        return this.prisma.habitCompletion.update({
+          where: {
+            userId_habitId_date: {
+              userId: data.userId,
+              habitId: data.habitId,
+              date: data.date,
+            },
+          },
+          data: {
+            count: { increment: 1 },
+          },
+        })
+      } else {
+        // Create with count = 1
+        return this.prisma.habitCompletion.create({
+          data: {
+            userId: data.userId,
+            habitId: data.habitId,
+            date: data.date,
+            count: 1,
+          },
+        })
+      }
+    } else {
+      // For once_per_day habits, toggle behavior
+      if (existing) {
+        // Delete if exists (toggle off)
+        await this.prisma.habitCompletion.delete({
+          where: {
+            userId_habitId_date: {
+              userId: data.userId,
+              habitId: data.habitId,
+              date: data.date,
+            },
+          },
+        })
+        return null
+      } else {
+        // Create if doesn't exist (toggle on)
+        return this.prisma.habitCompletion.create({
+          data: {
+            userId: data.userId,
+            habitId: data.habitId,
+            date: data.date,
+            count: 1,
+          },
+        })
+      }
+    }
+  }
+
+  async decreaseCompletion(data: {
+    userId: string
+    habitId: string
+    date: string
+  }): Promise<HabitCompletion | null> {
+    // Get habit to check its type
+    const habit = await this.prisma.habit.findUnique({
+      where: { id: data.habitId },
+      select: { type: true },
+    })
+
+    if (!habit) {
+      throw new Error('Habit not found')
+    }
+
+    // Only allow decrease for repeatable habits
+    if (habit.type !== HabitType.repeatable) {
+      throw new Error('Can only decrease count for repeatable habits')
+    }
+
+    // Check if completion exists
+    const existing = await this.findByHabitIdAndDate(
+      data.habitId,
+      data.userId,
+      data.date,
+    )
+
+    if (!existing || existing.count <= 0) {
+      return null
+    }
+
+    // If count is 1, delete the completion
+    if (existing.count === 1) {
       await this.prisma.habitCompletion.delete({
         where: {
           userId_habitId_date: {
@@ -65,16 +162,21 @@ export class HabitCompletionRepository
         },
       })
       return null
-    } else {
-      // Create if doesn't exist (toggle on)
-      return this.prisma.habitCompletion.create({
-        data: {
+    }
+
+    // Decrement count
+    return this.prisma.habitCompletion.update({
+      where: {
+        userId_habitId_date: {
           userId: data.userId,
           habitId: data.habitId,
           date: data.date,
         },
-      })
-    }
+      },
+      data: {
+        count: { decrement: 1 },
+      },
+    })
   }
 
   async getCompletedHabitIdsForDate(
@@ -92,6 +194,29 @@ export class HabitCompletionRepository
     })
 
     return completions.map((c) => c.habitId)
+  }
+
+  async getCompletionCountsForDate(
+    userId: string,
+    date: string,
+  ): Promise<Map<string, number>> {
+    const completions = await this.prisma.habitCompletion.findMany({
+      where: {
+        userId,
+        date,
+      },
+      select: {
+        habitId: true,
+        count: true,
+      },
+    })
+
+    const countsMap = new Map<string, number>()
+    for (const completion of completions) {
+      countsMap.set(completion.habitId, completion.count)
+    }
+
+    return countsMap
   }
 
   private calculateStreak(

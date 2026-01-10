@@ -1,6 +1,7 @@
 import { inject, injectable } from 'inversify'
 import { TYPES } from './types.js'
-import type { PrismaClient, Habit } from '@prisma/client'
+import type { PrismaClient, Habit, HabitType } from '@prisma/client'
+import { HabitType as HabitTypeEnum } from '@prisma/client'
 import type { IHabitRepository } from './interfaces.js'
 
 @injectable()
@@ -23,10 +24,7 @@ export class HabitRepository implements IHabitRepository {
     }
   }
 
-  async findByTemplateId(
-    templateId: string,
-    userId: string,
-  ): Promise<Habit[]> {
+  async findByTemplateId(templateId: string, userId: string): Promise<Habit[]> {
     await this.verifyTemplateOwnership(templateId, userId)
 
     return this.prisma.habit.findMany({
@@ -60,6 +58,7 @@ export class HabitRepository implements IHabitRepository {
       icon: string
       name: string
       description?: string | null
+      type?: HabitType
     },
     userId: string,
   ): Promise<Habit> {
@@ -72,6 +71,7 @@ export class HabitRepository implements IHabitRepository {
         icon: data.icon,
         name: data.name,
         description: data.description || null,
+        type: data.type || HabitTypeEnum.once_per_day,
       },
     })
   }
@@ -83,6 +83,7 @@ export class HabitRepository implements IHabitRepository {
       icon?: string
       name?: string
       description?: string | null
+      type?: HabitType
     },
   ): Promise<Habit> {
     // Verify ownership first
@@ -96,7 +97,10 @@ export class HabitRepository implements IHabitRepository {
       data: {
         ...(data.icon !== undefined && { icon: data.icon }),
         ...(data.name !== undefined && { name: data.name }),
-        ...(data.description !== undefined && { description: data.description }),
+        ...(data.description !== undefined && {
+          description: data.description,
+        }),
+        ...(data.type !== undefined && { type: data.type }),
       },
     })
   }

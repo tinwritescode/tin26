@@ -1,17 +1,42 @@
 import { useState, useEffect } from 'react'
-import { X } from 'lucide-react'
 import { IconPicker } from './IconPicker'
 import { getIcon } from '../../utils/icons'
+import {
+  Dialog,
+  DialogPopup,
+  DialogHeader,
+  DialogTitle,
+  DialogPanel,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card'
+import { Field, FieldLabel, FieldError } from '@/components/ui/field'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Form } from '@/components/ui/form'
+import { cn } from '@/components/lib/utils'
 
 interface HabitFormModalProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (data: { icon: string; name: string; description?: string }) => void
+  onSubmit: (data: {
+    icon: string
+    name: string
+    description?: string
+    type?: 'once_per_day' | 'repeatable'
+  }) => void
   habit?: {
     id: string
     icon: string
     name: string
     description?: string | null
+    type?: string
   } | null
   isLoading?: boolean
 }
@@ -26,6 +51,9 @@ export function HabitFormModal({
   const [icon, setIcon] = useState('CheckCircle')
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [type, setType] = useState<'once_per_day' | 'repeatable'>(
+    'once_per_day',
+  )
   const [errors, setErrors] = useState<{
     icon?: string
     name?: string
@@ -38,16 +66,16 @@ export function HabitFormModal({
         setIcon(habit.icon)
         setName(habit.name)
         setDescription(habit.description || '')
+        setType((habit.type as 'once_per_day' | 'repeatable') || 'once_per_day')
       } else {
         setIcon('CheckCircle')
         setName('')
         setDescription('')
+        setType('once_per_day')
       }
       setErrors({})
     }
   }, [isOpen, habit])
-
-  if (!isOpen) return null
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -76,6 +104,7 @@ export function HabitFormModal({
       icon,
       name: name.trim(),
       description: description.trim() || undefined,
+      type,
     })
     setErrors({})
   }
@@ -84,6 +113,7 @@ export function HabitFormModal({
     setName('')
     setDescription('')
     setIcon('CheckCircle')
+    setType('once_per_day')
     setErrors({})
     onClose()
   }
@@ -91,122 +121,176 @@ export function HabitFormModal({
   const SelectedIcon = getIcon(icon)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-slate-200 p-6 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-slate-800">
-            {habit ? 'Edit Habit' : 'Add Habit'}
-          </h2>
-          <button
-            onClick={handleClose}
-            className="p-1 rounded-lg hover:bg-slate-100 transition-colors duration-200 cursor-pointer"
-            aria-label="Close modal"
-          >
-            <X className="w-5 h-5 text-slate-600" />
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogPopup className="max-w-2xl max-h-[90vh]">
+        <DialogHeader>
+          <DialogTitle>{habit ? 'Edit Habit' : 'Add Habit'}</DialogTitle>
+        </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="p-6">
-          {/* Icon Picker */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Icon
-            </label>
-            <div className="mb-2">
-              <div className="inline-flex items-center gap-2 px-3 py-2 border border-slate-300 rounded-lg bg-slate-50">
-                <SelectedIcon className="w-5 h-5 text-slate-600" />
-                <span className="text-sm text-slate-600">{icon}</span>
-              </div>
+        <Form onSubmit={handleSubmit}>
+          <DialogPanel>
+            {/* Icon Picker */}
+            <div className="mb-6">
+              <Field>
+                <FieldLabel>Icon</FieldLabel>
+                <div className="mb-3">
+                  <div className="inline-flex items-center gap-2 px-3 py-2 border border-input rounded-lg bg-muted">
+                    <SelectedIcon className="w-5 h-5 text-foreground" />
+                    <span className="text-sm text-muted-foreground">
+                      {icon}
+                    </span>
+                  </div>
+                </div>
+                <IconPicker selectedIcon={icon} onSelect={setIcon} />
+                {errors.icon && <FieldError>{errors.icon}</FieldError>}
+              </Field>
             </div>
-            <IconPicker selectedIcon={icon} onSelect={setIcon} />
-            {errors.icon && (
-              <p className="mt-1 text-sm text-red-600" role="alert">
-                {errors.icon}
-              </p>
-            )}
-          </div>
 
-          {/* Name Input */}
-          <div className="mb-4">
-            <label
-              htmlFor="habit-name"
-              className="block text-sm font-medium text-slate-700 mb-2"
-            >
-              Habit Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="habit-name"
-              type="text"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value)
-                setErrors((prev) => ({ ...prev, name: undefined }))
-              }}
-              placeholder="e.g., Drink 8 glasses of water"
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              disabled={isLoading}
-              maxLength={100}
-            />
-            {errors.name && (
-              <p className="mt-1 text-sm text-red-600" role="alert">
-                {errors.name}
-              </p>
-            )}
-          </div>
-
-          {/* Description Input */}
-          <div className="mb-6">
-            <label
-              htmlFor="habit-description"
-              className="block text-sm font-medium text-slate-700 mb-2"
-            >
-              Description (Optional)
-            </label>
-            <textarea
-              id="habit-description"
-              value={description}
-              onChange={(e) => {
-                setDescription(e.target.value)
-                setErrors((prev) => ({ ...prev, description: undefined }))
-              }}
-              placeholder="Add a note about this habit..."
-              rows={3}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-              disabled={isLoading}
-              maxLength={500}
-            />
-            <div className="mt-1 flex justify-between">
-              {errors.description && (
-                <p className="text-sm text-red-600" role="alert">
-                  {errors.description}
-                </p>
-              )}
-              <p className="text-xs text-slate-500 ml-auto">
-                {description.length}/500
-              </p>
+            {/* Name Input */}
+            <div className="mb-6">
+              <Field>
+                <FieldLabel>
+                  Habit Name <span className="text-red-500">*</span>
+                </FieldLabel>
+                <Input
+                  id="habit-name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value)
+                    setErrors((prev) => ({ ...prev, name: undefined }))
+                  }}
+                  placeholder="e.g., Drink 8 glasses of water"
+                  disabled={isLoading}
+                  maxLength={100}
+                  aria-invalid={!!errors.name}
+                />
+                {errors.name && <FieldError>{errors.name}</FieldError>}
+              </Field>
             </div>
-          </div>
 
-          {/* Actions */}
-          <div className="flex gap-3 justify-end border-t border-slate-200 pt-4">
-            <button
+            {/* Description Input */}
+            <div className="mb-6">
+              <Field>
+                <FieldLabel>Description (Optional)</FieldLabel>
+                <Textarea
+                  id="habit-description"
+                  value={description}
+                  onChange={(e) => {
+                    setDescription(e.target.value)
+                    setErrors((prev) => ({ ...prev, description: undefined }))
+                  }}
+                  placeholder="Add a note about this habit..."
+                  rows={3}
+                  disabled={isLoading}
+                  maxLength={500}
+                  aria-invalid={!!errors.description}
+                />
+                <div className="mt-1 flex justify-between">
+                  {errors.description && (
+                    <FieldError>{errors.description}</FieldError>
+                  )}
+                  <p className="text-xs text-muted-foreground ml-auto">
+                    {description.length}/500
+                  </p>
+                </div>
+              </Field>
+            </div>
+
+            {/* Type Selection */}
+            <div className="mb-4">
+              <Field>
+                <FieldLabel>
+                  Habit Type <span className="text-red-500">*</span>
+                </FieldLabel>
+                <div className="grid grid-cols-2 gap-3 w-full">
+                  <Card
+                    onClick={() => !isLoading && setType('once_per_day')}
+                    onKeyDown={(e) => {
+                      if ((e.key === 'Enter' || e.key === ' ') && !isLoading) {
+                        e.preventDefault()
+                        setType('once_per_day')
+                      }
+                    }}
+                    tabIndex={isLoading ? -1 : 0}
+                    role="button"
+                    aria-pressed={type === 'once_per_day'}
+                    aria-label="Select Once Per Day habit type"
+                    className={cn(
+                      'cursor-pointer border-2',
+                      'transition-[border-color,background-color,box-shadow] duration-200 ease-out',
+                      'hover:shadow-lg hover:border-primary/50 hover:bg-accent/50',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                      type === 'once_per_day'
+                        ? 'border-primary bg-primary/10 shadow-md'
+                        : 'border-border hover:border-primary/50',
+                      isLoading && 'opacity-50 cursor-not-allowed',
+                    )}
+                  >
+                    <CardHeader className="pb-3 gap-2">
+                      <CardTitle className="text-base">Once Per Day</CardTitle>
+                      <CardDescription className="text-xs">
+                        Complete once per day (e.g., Morning meditation)
+                      </CardDescription>
+                    </CardHeader>
+                  </Card>
+                  <Card
+                    onClick={() => !isLoading && setType('repeatable')}
+                    onKeyDown={(e) => {
+                      if ((e.key === 'Enter' || e.key === ' ') && !isLoading) {
+                        e.preventDefault()
+                        setType('repeatable')
+                      }
+                    }}
+                    tabIndex={isLoading ? -1 : 0}
+                    role="button"
+                    aria-pressed={type === 'repeatable'}
+                    aria-label="Select Repeatable habit type"
+                    className={cn(
+                      'cursor-pointer border-2',
+                      'transition-[border-color,background-color,box-shadow] duration-200 ease-out',
+                      'hover:shadow-lg hover:border-primary/50 hover:bg-accent/50',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                      type === 'repeatable'
+                        ? 'border-primary bg-primary/10 shadow-md'
+                        : 'border-border hover:border-primary/50',
+                      isLoading && 'opacity-50 cursor-not-allowed',
+                    )}
+                  >
+                    <CardHeader className="pb-3 gap-2">
+                      <CardTitle className="text-base">Repeatable</CardTitle>
+                      <CardDescription className="text-xs">
+                        Complete multiple times per day (e.g., Drink 8 glasses
+                        of water)
+                      </CardDescription>
+                    </CardHeader>
+                  </Card>
+                </div>
+              </Field>
+            </div>
+          </DialogPanel>
+
+          <DialogFooter>
+            <Button
               type="button"
               onClick={handleClose}
-              className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors duration-200 cursor-pointer text-sm font-medium"
+              variant="outline"
               disabled={isLoading}
             >
               Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 cursor-pointer text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isLoading}
-            >
-              {isLoading ? (habit ? 'Saving...' : 'Adding...') : habit ? 'Save' : 'Add Habit'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+            </Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading
+                ? habit
+                  ? 'Saving...'
+                  : 'Adding...'
+                : habit
+                  ? 'Save'
+                  : 'Add Habit'}
+            </Button>
+          </DialogFooter>
+        </Form>
+      </DialogPopup>
+    </Dialog>
   )
 }

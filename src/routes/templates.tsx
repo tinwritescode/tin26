@@ -92,6 +92,7 @@ function TemplatesPage() {
     icon: string
     name: string
     description?: string | null
+    type?: string
   } | null>(null)
   const [showDeleteHabitModal, setShowDeleteHabitModal] = useState(false)
   const [deletingHabit, setDeletingHabit] = useState<{
@@ -195,6 +196,7 @@ function TemplatesPage() {
     icon: string
     name: string
     description?: string | null
+    type?: string
   }) => {
     setEditingHabit(habit)
     setShowHabitModal(true)
@@ -210,6 +212,7 @@ function TemplatesPage() {
     icon: string
     name: string
     description?: string
+    type?: 'once_per_day' | 'repeatable'
   }) => {
     if (!managingHabitsTemplateId) return
 
@@ -254,7 +257,6 @@ function TemplatesPage() {
   // Habit management view
   if (managingHabitsTemplateId && templateWithHabits) {
     const habits = templateWithHabits.habits || []
-    const template = templates.find((t) => t.id === managingHabitsTemplateId)
 
     return (
       <div className="min-h-screen bg-[#F0F2F5]">
@@ -309,7 +311,7 @@ function TemplatesPage() {
                         className="bg-white rounded-lg border border-slate-200 p-4"
                       >
                         <div className="flex items-start gap-3">
-                          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
+                          <div className="shrink-0 w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
                             <Icon className="w-6 h-6 text-slate-600" />
                           </div>
                           <div className="flex-1 min-w-0">

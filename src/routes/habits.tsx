@@ -7,7 +7,7 @@ import { RightSidebar } from '../components/layout/RightSidebar'
 import { HabitCard } from '../components/habits/HabitCard'
 import { EmptyState } from '../components/habits/EmptyState'
 import { Target } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 
 export const Route = createFileRoute('/habits')({
   component: HabitsPage,
@@ -37,17 +37,29 @@ function HabitsPage() {
       retry: false,
     })
 
+  const { data: completionCounts = {}, isLoading: countsLoading } =
+    trpc.habits.getTodaysCompletionCounts.useQuery(undefined, {
+      enabled: hasToken && !!userData && !!activeTemplate,
+      retry: false,
+    })
+
   const utils = trpc.useUtils()
   const toggleCompletion = trpc.habits.toggleHabitCompletion.useMutation({
     onSuccess: () => {
       // Invalidate queries to refetch
       utils.habits.getTodaysCompletions.invalidate()
+      utils.habits.getTodaysCompletionCounts.invalidate()
+    },
+  })
+  const decreaseCompletion = trpc.habits.decreaseHabitCompletion.useMutation({
+    onSuccess: () => {
+      // Invalidate queries to refetch
+      utils.habits.getTodaysCompletions.invalidate()
+      utils.habits.getTodaysCompletionCounts.invalidate()
     },
   })
 
   // Daily reset detection - store last date in localStorage
-  const [lastDate, setLastDate] = useState<string | null>(null)
-
   useEffect(() => {
     const storedDate = localStorage.getItem('habits_last_date')
     const currentDate = new Date().toISOString().split('T')[0]
@@ -55,9 +67,6 @@ function HabitsPage() {
     if (storedDate !== currentDate) {
       // New day detected - reset is handled by backend (completions are date-specific)
       localStorage.setItem('habits_last_date', currentDate)
-      setLastDate(currentDate)
-    } else {
-      setLastDate(storedDate)
     }
   }, [])
 
@@ -76,8 +85,23 @@ function HabitsPage() {
     )
   }
 
+  const handleDecreaseCompletion = (habitId: string) => {
+    decreaseCompletion.mutate(
+      {
+        habitId,
+        date: today,
+      },
+      {
+        onError: (error) => {
+          console.error('Failed to decrease habit completion:', error)
+          // Could add toast notification here
+        },
+      },
+    )
+  }
+
   // Loading state
-  if (userLoading || templateLoading || completionsLoading) {
+  if (userLoading || templateLoading || completionsLoading || countsLoading) {
     return (
       <div className="min-h-screen bg-[#F0F2F5]">
         <AppNav />
@@ -184,7 +208,9 @@ function HabitsPage() {
                     key={habit.id}
                     habit={habit}
                     isCompleted={completedHabitIds.includes(habit.id)}
+                    completionCount={completionCounts[habit.id] || 0}
                     onToggle={() => handleToggleCompletion(habit.id)}
+                    onDecrease={() => handleDecreaseCompletion(habit.id)}
                   />
                 ))}
               </div>
