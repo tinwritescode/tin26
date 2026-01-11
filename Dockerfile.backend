@@ -17,17 +17,22 @@ COPY server/package.json server/bun.lockb ./server/
 WORKDIR /app/server
 RUN bun install --frozen-lockfile
 
+# Copy server source files
+WORKDIR /app
+COPY server ./server
+
 # Generate Prisma client (from root)
 WORKDIR /app
-RUN bun run prisma generate
+RUN bunx prisma generate
 
 # Production stage
 FROM oven/bun:1 AS production
 WORKDIR /app
 
 # Copy root package files for Prisma
+# Install all dependencies (including dev) since Prisma config needs dotenv
 COPY package.json bun.lockb ./
-RUN bun install --frozen-lockfile --production
+RUN bun install --frozen-lockfile
 
 # Copy server package files
 COPY server/package.json server/bun.lockb ./server/
@@ -46,5 +51,5 @@ COPY --from=base /app/server ./server
 # Expose port
 EXPOSE 3001
 
-# Run migrations and start server
-CMD ["sh", "-c", "bun run prisma migrate deploy && cd server && bun run start"]
+# Run migrations and start server (migrations are in root /app/prisma)
+CMD ["sh", "-c", "bunx prisma migrate deploy && cd /app/server && bun run start"]

@@ -56,4 +56,4 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # Prisma
-prisma/migrations
+# migrations are needed for production deployments

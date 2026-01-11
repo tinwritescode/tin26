@@ -3,12 +3,15 @@
 ## TL;DR - Deploy in 5 Minutes
 
 ### 1. Create Project & Database
+
 - Go to [railway.app](https://railway.app) → New Project → GitHub Repo
 - Add PostgreSQL database
 - Copy `DATABASE_URL` from database service
 
 ### 2. Deploy Backend
+
 - New Service → GitHub Repo (same repo)
+- Name the service: `backend` (or any name you prefer)
 - Settings → Build → Dockerfile: `Dockerfile.backend`
 - Settings → Variables → Add:
   ```
@@ -25,21 +28,25 @@
 - Copy backend URL
 
 ### 3. Deploy Frontend
+
 - New Service → GitHub Repo (same repo)
 - Settings → Build → Dockerfile: `Dockerfile.frontend`
 - Settings → Variables → Add:
   ```
-  VITE_API_URL=https://your-backend.up.railway.app
+  BACKEND_URL=https://your-backend.up.railway.app
   ```
+  **Note**: Do NOT set `VITE_API_URL` - we use nginx proxying instead
 - Settings → Networking → Generate domain
 - Copy frontend URL
 
 ### 4. Update URLs
+
 - Backend: Update `FRONTEND_URL` and `WORKOS_REDIRECT_URI` with frontend URL
-- Frontend: Update `VITE_API_URL` with backend URL
+- Frontend: Update `BACKEND_URL` with backend URL (if not already set)
 - Services will auto-redeploy
 
 ### 5. Run Migrations
+
 ```bash
 railway run bun run prisma migrate deploy
 ```

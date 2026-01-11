@@ -29,7 +29,7 @@ Step-by-step guide to deploy your app to Railway.
 2. Select **"GitHub Repo"** (select the same repo)
 3. Railway will detect your repo
 4. **Configure the service:**
-   - **Name**: `tin-backend` (or any name you prefer)
+   - **Name**: `backend` (or `tin-backend` - any name you prefer)
    - Railway will auto-detect `Dockerfile.backend` if present
    - If not detected, go to **Settings** → **Build** → Set Dockerfile path to `Dockerfile.backend`
 
@@ -76,10 +76,13 @@ Step-by-step guide to deploy your app to Railway.
 4. **Add Environment Variables** (Settings → Variables):
 
    ```
-   VITE_API_URL=https://your-backend-service.up.railway.app
+   BACKEND_URL=https://your-backend-service.up.railway.app
    ```
 
-   **Important**: Replace with your actual backend URL from Step 3
+   **Important**:
+   - Replace with your actual backend URL from Step 3
+   - Do NOT set `VITE_API_URL` - we use nginx proxying instead
+   - The frontend will use relative URLs (`/trpc`, `/api`) which nginx will proxy to the backend
 
 5. **Configure Build Settings**:
    - Build Command: (leave empty, Dockerfile handles it)
@@ -101,7 +104,7 @@ After getting both URLs, update:
    - Update `WORKOS_REDIRECT_URI` to `https://your-frontend-url/auth/callback`
 
 2. **Frontend Service** → **Variables**:
-   - Update `VITE_API_URL` to your backend URL
+   - Update `BACKEND_URL` to your backend URL (if not already set)
 
 3. **Redeploy both services** (Railway will auto-redeploy on variable changes, or trigger manually)
 
@@ -156,8 +159,9 @@ railway run bun run prisma migrate deploy
 ### Frontend can't reach backend
 
 1. **Check CORS**: Ensure `FRONTEND_URL` in backend matches frontend URL
-2. **Check `VITE_API_URL`**: Must be set at build time (not runtime)
-3. **Check network**: Both services should be in same Railway project
+2. **Check `BACKEND_URL`**: Must be set in frontend service environment variables
+3. **Check nginx proxy**: Frontend uses nginx to proxy `/trpc` and `/api` requests to backend
+4. **Check network**: Both services should be in same Railway project
 
 ### Database connection issues
 

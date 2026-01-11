@@ -3,15 +3,22 @@ const CACHE_NAME = 'myapp-v1'
 const urlsToCache = [
   '/',
   '/index.html',
-  '/src/main.tsx',
-  '/src/styles.css',
 ]
 
 // Install event - cache resources
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(urlsToCache)
+      // Use addAll with error handling - cache what we can
+      return Promise.allSettled(
+        urlsToCache.map((url) =>
+          cache.add(url).catch((err) => {
+            console.warn(`Failed to cache ${url}:`, err)
+            // Don't fail the entire install if one URL fails
+            return null
+          }),
+        ),
+      )
     }),
   )
   self.skipWaiting()
