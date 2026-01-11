@@ -34,4 +34,20 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Ensure service worker is not hashed
+        entryFileNames: 'assets/[name].[hash].js',
+        chunkFileNames: 'assets/[name].[hash].js',
+        assetFileNames: (assetInfo) => {
+          // Keep service worker at root
+          if (assetInfo.name === 'sw.js') {
+            return 'sw.js'
+          }
+          return 'assets/[name].[hash][extname]'
+        },
+      },
+    },
+  },
 }))

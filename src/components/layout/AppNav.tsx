@@ -1,6 +1,8 @@
 import { Bell, Home, Search } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
 import { useAuth } from '../../common/hooks/useAuth'
 import { trpc } from '../../lib/trpc'
+import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar'
 import type { User } from '../../types/auth'
 
 export function AppNav() {
@@ -34,9 +36,12 @@ export function AppNav() {
         <div className="flex items-center justify-between h-14">
           {/* Left: Logo and Search */}
           <div className="flex items-center gap-2 flex-1">
-            <div className="text-2xl font-bold text-[#1877F2] cursor-pointer">
+            <Link
+              to="/"
+              className="text-2xl font-bold text-[#1877F2] cursor-pointer hover:opacity-90 transition-opacity duration-200"
+            >
               MyApp
-            </div>
+            </Link>
             <div className="hidden md:flex items-center bg-[#F0F2F5] rounded-full px-4 py-2 flex-1 max-w-md ml-4">
               <Search className="w-4 h-4 text-[#65676B] mr-2" />
               <input
@@ -62,9 +67,19 @@ export function AppNav() {
             </button>
             {user && (
               <div className="flex items-center gap-2 ml-2">
-                <div className="w-8 h-8 rounded-full bg-[#1877F2] flex items-center justify-center text-white text-sm font-semibold cursor-pointer hover:opacity-90 transition-opacity duration-200">
-                  {getInitials(user)}
-                </div>
+                <Link
+                  to="/profile"
+                  className="cursor-pointer hover:opacity-90 transition-opacity duration-200"
+                >
+                  <Avatar className="w-8 h-8 border-2 border-transparent hover:border-[#1877F2]/20 transition-colors duration-200">
+                    {user.avatar ? (
+                      <AvatarImage src={user.avatar} alt={getInitials(user)} />
+                    ) : null}
+                    <AvatarFallback className="bg-[#1877F2] text-white text-sm font-semibold">
+                      {getInitials(user)}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
                 <button
                   onClick={logout}
                   className="px-3 py-1.5 text-sm font-medium text-[#050505] hover:bg-[#F0F2F5] rounded transition-colors duration-200 cursor-pointer"

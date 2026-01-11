@@ -8,6 +8,7 @@ import type {
   IHabitTemplateRepository,
   IHabitRepository,
   IHabitCompletionRepository,
+  IPostRepository,
 } from '../repositories/interfaces.js'
 import type { User } from '../../types/auth.js'
 
@@ -25,6 +26,9 @@ export async function createContext(opts?: CreateExpressContextOptions) {
   )
   const habitCompletionRepository = container.get<IHabitCompletionRepository>(
     RepositoryTypes.HabitCompletionRepository,
+  )
+  const postRepository = container.get<IPostRepository>(
+    RepositoryTypes.PostRepository,
   )
 
   let user: User | null = null
@@ -52,6 +56,7 @@ export async function createContext(opts?: CreateExpressContextOptions) {
     habitTemplateRepository,
     habitRepository,
     habitCompletionRepository,
+    postRepository,
     user,
     isAuthenticated,
   }

@@ -4,6 +4,9 @@ import type {
   Habit,
   HabitCompletion,
   HabitType,
+  Post,
+  PostComment,
+  User as PrismaUser,
 } from '@prisma/client'
 
 export type HabitTemplateWithHabits = HabitTemplate & {
@@ -25,6 +28,12 @@ export interface IUserRepository {
       email?: string
       firstName?: string | null
       lastName?: string | null
+      avatar?: string | null
+      coverPhoto?: string | null
+      bio?: string | null
+      location?: string | null
+      work?: string | null
+      education?: string | null
     },
   ) => Promise<User>
   updateAppliedTemplate: (
@@ -187,4 +196,64 @@ export interface IHabitCompletionRepository {
       habits: Array<{ habitId: string; habitName: string }>
     }>
   }>
+}
+
+export type PostWithAuthor = Post & {
+  user: PrismaUser
+  _count: {
+    likes: number
+    comments: number
+    shares: number
+  }
+}
+
+export type CommentWithAuthor = PostComment & {
+  user: PrismaUser
+}
+
+export interface IPostRepository {
+  findById: (id: string) => Promise<PostWithAuthor | null>
+  findByUserId: (
+    userId: string,
+    limit?: number,
+    offset?: number,
+  ) => Promise<PostWithAuthor[]>
+  findFeed: (
+    userId: string,
+    limit?: number,
+    offset?: number,
+  ) => Promise<PostWithAuthor[]>
+  create: (data: {
+    userId: string
+    content: string
+    imageUrl?: string | null
+  }) => Promise<PostWithAuthor>
+  update: (
+    id: string,
+    userId: string,
+    data: {
+      content?: string
+      imageUrl?: string | null
+    },
+  ) => Promise<PostWithAuthor>
+  delete: (id: string, userId: string) => Promise<void>
+  toggleLike: (
+    postId: string,
+    userId: string,
+  ) => Promise<{ liked: boolean; likeCount: number }>
+  addComment: (
+    postId: string,
+    userId: string,
+    content: string,
+  ) => Promise<CommentWithAuthor>
+  deleteComment: (commentId: string, userId: string) => Promise<void>
+  share: (
+    postId: string,
+    userId: string,
+  ) => Promise<{ shared: boolean; shareCount: number }>
+  getLikeCount: (postId: string) => Promise<number>
+  getCommentCount: (postId: string) => Promise<number>
+  getShareCount: (postId: string) => Promise<number>
+  isLikedByUser: (postId: string, userId: string) => Promise<boolean>
+  isSharedByUser: (postId: string, userId: string) => Promise<boolean>
 }

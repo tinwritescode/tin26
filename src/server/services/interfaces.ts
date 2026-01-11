@@ -11,7 +11,13 @@ export interface IWorkOSService {
     email: string
     firstName?: string | null
     lastName?: string | null
+    sealedSession?: string | null
   }>
+  getLogoutUrl: (redirectUri: string, clientId: string) => string
+  getLogoutUrlFromSession: (
+    sessionCookie: string | undefined,
+    redirectUri: string,
+  ) => Promise<string | null>
 }
 
 export interface IJwtService {

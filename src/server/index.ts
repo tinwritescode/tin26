@@ -1,6 +1,7 @@
 import 'reflect-metadata'
 import express from 'express'
 import cors from 'cors'
+import cookieParser from 'cookie-parser'
 import { createExpressMiddleware } from '@trpc/server/adapters/express'
 import { appRouter } from './trpc/router/_app.js'
 import { registerRoutes } from './routes.js'
@@ -9,6 +10,7 @@ const app = express()
 const PORT = process.env.PORT || 3001
 
 app.use(express.json())
+app.use(cookieParser())
 app.use(
   cors({
     origin: process.env.FRONTEND_URL || 'http://localhost:3000',
