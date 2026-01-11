@@ -6,17 +6,18 @@ function getAuthToken(): string | null {
   return localStorage.getItem('auth_token')
 }
 
-export const { useUploadThing, uploadFiles } = generateReactHelpers<OurFileRouter>({
-  url: '/api/uploadthing',
-  fetch: (url, options) => {
-    const token = getAuthToken()
-    const headers = new Headers(options?.headers)
-    if (token) {
-      headers.set('Authorization', `Bearer ${token}`)
-    }
-    return fetch(url, {
-      ...options,
-      headers,
-    })
-  },
-})
+export const { useUploadThing, uploadFiles } =
+  generateReactHelpers<OurFileRouter>({
+    url: '/api/uploadthing',
+    fetch: (url, options) => {
+      const token = getAuthToken()
+      const headers = new Headers(options?.headers)
+      if (token) {
+        headers.set('Authorization', `Bearer ${token}`)
+      }
+      return fetch(url, {
+        ...options,
+        headers,
+      })
+    },
+  })

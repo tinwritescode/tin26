@@ -1,5 +1,6 @@
 # Frontend Dockerfile
 FROM oven/bun:1 AS builder
+SHELL ["/bin/sh", "-c"]
 WORKDIR /app
 
 # Install dependencies
@@ -9,8 +10,8 @@ RUN bun install --frozen-lockfile
 # Copy Prisma schema (needed for generating client)
 COPY prisma ./prisma
 
-    # Generate Prisma client (needed for server type imports in frontend)
-    RUN bun run prisma generate
+# Generate Prisma client (needed for server type imports in frontend)
+RUN bun run prisma generate
 
 # Copy source files
 COPY . .
