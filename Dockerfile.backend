@@ -1,0 +1,33 @@
+# Backend Dockerfile
+FROM oven/bun:1 AS base
+WORKDIR /app
+
+# Install dependencies
+COPY package.json bun.lockb ./
+RUN bun install --frozen-lockfile --production=false
+
+# Copy source files
+COPY . .
+
+# Generate Prisma client
+RUN bun run prisma:generate
+
+# Production stage
+FROM oven/bun:1 AS production
+WORKDIR /app
+
+# Copy package files
+COPY package.json bun.lockb ./
+RUN bun install --frozen-lockfile --production
+
+# Copy source files (Bun runs TypeScript directly)
+COPY --from=base /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=base /app/prisma ./prisma
+COPY --from=base /app/src ./src
+COPY --from=base /app/tsconfig.json ./
+
+# Expose port
+EXPOSE 3001
+
+# Run migrations and start server
+CMD ["sh", "-c", "bun run prisma migrate deploy && bun run src/server/index.ts"]
