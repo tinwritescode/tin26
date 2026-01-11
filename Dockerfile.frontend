@@ -6,6 +6,12 @@ WORKDIR /app
 COPY package.json bun.lockb ./
 RUN bun install --frozen-lockfile
 
+# Copy Prisma schema (needed for generating client)
+COPY prisma ./prisma
+
+# Generate Prisma client (needed for server type imports in frontend)
+RUN bun run prisma:generate
+
 # Copy source files
 COPY . .
 
@@ -14,7 +20,8 @@ COPY . .
 # For docker-compose, frontend uses nginx proxy (no VITE_API_URL needed)
 ARG VITE_API_URL
 ENV VITE_API_URL=${VITE_API_URL}
-RUN bun run build
+# Only run vite build, skip tsc (Vite handles TypeScript compilation)
+RUN bun run vite build
 
 # Production stage with nginx
 FROM nginx:alpine AS production

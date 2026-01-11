@@ -30,7 +30,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3001
-      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/tin}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/tin?schema=public}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       WORKOS_API_KEY: ${WORKOS_API_KEY}
       WORKOS_CLIENT_ID: ${WORKOS_CLIENT_ID}
