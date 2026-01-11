@@ -2,32 +2,49 @@
 FROM oven/bun:1 AS base
 WORKDIR /app
 
-# Install dependencies (including dev dependencies for build)
+# Copy root files for Prisma
 COPY package.json bun.lockb ./
+COPY prisma ./prisma
+COPY prisma.config.ts ./
+
+# Install root dependencies (for Prisma CLI)
 RUN bun install --frozen-lockfile
 
-# Copy source files
-COPY . .
+# Copy server package files
+COPY server/package.json server/bun.lockb ./server/
 
-# Generate Prisma client
-RUN bun run prisma:generate
+# Install server dependencies
+WORKDIR /app/server
+RUN bun install --frozen-lockfile
+
+# Generate Prisma client (from root)
+WORKDIR /app
+RUN bun run prisma generate
 
 # Production stage
 FROM oven/bun:1 AS production
 WORKDIR /app
 
-# Copy package files
+# Copy root package files for Prisma
 COPY package.json bun.lockb ./
 RUN bun install --frozen-lockfile --production
 
-# Copy source files (Bun runs TypeScript directly)
+# Copy server package files
+COPY server/package.json server/bun.lockb ./server/
+WORKDIR /app/server
+RUN bun install --frozen-lockfile --production
+
+# Copy Prisma files and generated client
+WORKDIR /app
 COPY --from=base /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=base /app/prisma ./prisma
-COPY --from=base /app/src ./src
-COPY --from=base /app/tsconfig.json ./
+COPY prisma.config.ts ./
+
+# Copy server source files (Bun runs TypeScript directly)
+COPY --from=base /app/server ./server
 
 # Expose port
 EXPOSE 3001
 
 # Run migrations and start server
-CMD ["sh", "-c", "bun run prisma migrate deploy && bun run src/server/index.ts"]
+CMD ["sh", "-c", "bun run prisma migrate deploy && cd server && bun run start"]
