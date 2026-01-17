@@ -56,11 +56,10 @@ export function CreateTemplateModal({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogPopup className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Create Template</DialogTitle>
-        </DialogHeader>
-
         <Form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle>Create Template</DialogTitle>
+          </DialogHeader>
           <DialogPanel>
             <Field>
               <FieldLabel>Template Name</FieldLabel>

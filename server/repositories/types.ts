@@ -6,5 +6,7 @@ export const TYPES = {
   PostRepository: Symbol.for('PostRepository'),
   NotificationRepository: Symbol.for('NotificationRepository'),
   PushSubscriptionRepository: Symbol.for('PushSubscriptionRepository'),
+  AlbumRepository: Symbol.for('AlbumRepository'),
+  ImageRepository: Symbol.for('ImageRepository'),
   PrismaClient: Symbol.for('PrismaClient'),
 } as const

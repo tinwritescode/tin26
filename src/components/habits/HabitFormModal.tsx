@@ -123,11 +123,10 @@ export function HabitFormModal({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogPopup className="max-w-2xl max-h-[90vh]">
-        <DialogHeader>
-          <DialogTitle>{habit ? 'Edit Habit' : 'Add Habit'}</DialogTitle>
-        </DialogHeader>
-
         <Form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle>{habit ? 'Edit Habit' : 'Add Habit'}</DialogTitle>
+          </DialogHeader>
           <DialogPanel>
             {/* Icon Picker */}
             <div className="mb-6">

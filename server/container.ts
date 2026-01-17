@@ -12,6 +12,8 @@ import { HabitCompletionRepository } from './repositories/HabitCompletionReposit
 import { PostRepository } from './repositories/PostRepository.js'
 import { NotificationRepository } from './repositories/NotificationRepository.js'
 import { PushSubscriptionRepository } from './repositories/PushSubscriptionRepository.js'
+import { AlbumRepository } from './repositories/AlbumRepository.js'
+import { ImageRepository } from './repositories/ImageRepository.js'
 import { NotificationService } from './services/NotificationService.js'
 import { AuthController } from './controllers/AuthController.js'
 import { HealthController } from './controllers/HealthController.js'
@@ -65,6 +67,14 @@ container
     RepositoryTypes.PushSubscriptionRepository,
   )
   .to(PushSubscriptionRepository)
+  .inSingletonScope()
+container
+  .bind<AlbumRepository>(RepositoryTypes.AlbumRepository)
+  .to(AlbumRepository)
+  .inSingletonScope()
+container
+  .bind<ImageRepository>(RepositoryTypes.ImageRepository)
+  .to(ImageRepository)
   .inSingletonScope()
 
 // Bind services as singletons

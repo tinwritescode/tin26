@@ -7,6 +7,8 @@ import type {
   Post,
   PostComment,
   User as PrismaUser,
+  Album,
+  Image,
 } from '@prisma/client'
 
 export type HabitTemplateWithHabits = HabitTemplate & {
@@ -301,4 +303,75 @@ export interface IPushSubscriptionRepository {
   }) => Promise<PushSubscription>
   findByUserId: (userId: string) => Promise<PushSubscription[]>
   delete: (userId: string, endpoint: string) => Promise<void>
+}
+
+export type AlbumWithUser = Album & {
+  user: PrismaUser
+  _count: {
+    images: number
+  }
+}
+
+export type AlbumWithImages = Album & {
+  user: PrismaUser
+  images: Image[]
+  _count: {
+    images: number
+  }
+}
+
+export interface IAlbumRepository {
+  findById: (id: string) => Promise<AlbumWithUser | null>
+  findByUserId: (
+    userId: string,
+    limit?: number,
+    offset?: number,
+  ) => Promise<AlbumWithUser[]>
+  findByIdWithImages: (id: string) => Promise<AlbumWithImages | null>
+  create: (data: {
+    userId: string
+    title: string
+    description?: string | null
+    thumbnailUrl?: string | null
+  }) => Promise<AlbumWithUser>
+  update: (
+    id: string,
+    userId: string,
+    data: {
+      title?: string
+      description?: string | null
+      thumbnailUrl?: string | null
+    },
+  ) => Promise<AlbumWithUser>
+  delete: (id: string, userId: string) => Promise<void>
+  verifyOwnership: (albumId: string, userId: string) => Promise<boolean>
+}
+
+export type ImageWithAlbum = Image & {
+  album: Album
+}
+
+export interface IImageRepository {
+  findById: (id: string) => Promise<ImageWithAlbum | null>
+  findByAlbumId: (
+    albumId: string,
+    limit?: number,
+    offset?: number,
+  ) => Promise<Image[]>
+  create: (data: {
+    albumId: string
+    url: string
+    description?: string | null
+    order?: number
+  }) => Promise<Image>
+  update: (
+    id: string,
+    userId: string, // For ownership verification via album
+    data: {
+      description?: string | null
+      order?: number
+    },
+  ) => Promise<Image>
+  delete: (id: string, userId: string) => Promise<void>
+  verifyOwnership: (imageId: string, userId: string) => Promise<boolean>
 }

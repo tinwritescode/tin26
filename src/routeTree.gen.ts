@@ -14,7 +14,9 @@ import { Route as StatisticsRouteImport } from './routes/statistics'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HabitsRouteImport } from './routes/habits'
+import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GalleryAlbumIdRouteImport } from './routes/gallery_.$albumId'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 
 const TemplatesRoute = TemplatesRouteImport.update({
@@ -42,9 +44,19 @@ const HabitsRoute = HabitsRouteImport.update({
   path: '/habits',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GalleryRoute = GalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GalleryAlbumIdRoute = GalleryAlbumIdRouteImport.update({
+  id: '/gallery_/$albumId',
+  path: '/gallery/$albumId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
@@ -55,70 +67,84 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/gallery': typeof GalleryRoute
   '/habits': typeof HabitsRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/gallery/$albumId': typeof GalleryAlbumIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/gallery': typeof GalleryRoute
   '/habits': typeof HabitsRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/gallery/$albumId': typeof GalleryAlbumIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/gallery': typeof GalleryRoute
   '/habits': typeof HabitsRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/gallery_/$albumId': typeof GalleryAlbumIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/gallery'
     | '/habits'
     | '/login'
     | '/profile'
     | '/statistics'
     | '/templates'
     | '/auth/callback'
+    | '/gallery/$albumId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/gallery'
     | '/habits'
     | '/login'
     | '/profile'
     | '/statistics'
     | '/templates'
     | '/auth/callback'
+    | '/gallery/$albumId'
   id:
     | '__root__'
     | '/'
+    | '/gallery'
     | '/habits'
     | '/login'
     | '/profile'
     | '/statistics'
     | '/templates'
     | '/auth/callback'
+    | '/gallery_/$albumId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  GalleryRoute: typeof GalleryRoute
   HabitsRoute: typeof HabitsRoute
   LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRoute
   StatisticsRoute: typeof StatisticsRoute
   TemplatesRoute: typeof TemplatesRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
+  GalleryAlbumIdRoute: typeof GalleryAlbumIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -158,11 +184,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HabitsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/gallery': {
+      id: '/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof GalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gallery_/$albumId': {
+      id: '/gallery_/$albumId'
+      path: '/gallery/$albumId'
+      fullPath: '/gallery/$albumId'
+      preLoaderRoute: typeof GalleryAlbumIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/callback': {
@@ -177,12 +217,14 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  GalleryRoute: GalleryRoute,
   HabitsRoute: HabitsRoute,
   LoginRoute: LoginRoute,
   ProfileRoute: ProfileRoute,
   StatisticsRoute: StatisticsRoute,
   TemplatesRoute: TemplatesRoute,
   AuthCallbackRoute: AuthCallbackRoute,
+  GalleryAlbumIdRoute: GalleryAlbumIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

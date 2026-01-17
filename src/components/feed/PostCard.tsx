@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ThumbsUp, MessageCircle, Share2, MoreHorizontal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { Post } from '../../types/posts'
@@ -29,18 +29,20 @@ export function PostCard({ post, currentUserId }: PostCardProps) {
   const utils = trpc.useUtils()
 
   // Fetch initial interaction state
-  const { data: interactions } = trpc.posts.getPostInteractions.useQuery(
-    { postId: post.id },
-    {
-      onSuccess: (data) => {
-        setLiked(data.liked)
-        setShared(data.shared)
-        setLikeCount(data.likeCount)
-        setCommentCount(data.commentCount)
-        setShareCount(data.shareCount)
-      },
-    },
-  )
+  const { data: interactions } = trpc.posts.getPostInteractions.useQuery({
+    postId: post.id,
+  })
+
+  // Update state when interactions data changes
+  useEffect(() => {
+    if (interactions) {
+      setLiked(interactions.liked)
+      setShared(interactions.shared)
+      setLikeCount(interactions.likeCount)
+      setCommentCount(interactions.commentCount)
+      setShareCount(interactions.shareCount)
+    }
+  }, [interactions])
 
   const toggleLikeMutation = trpc.posts.toggleLike.useMutation({
     onMutate: async () => {
@@ -260,8 +262,19 @@ export function PostCard({ post, currentUserId }: PostCardProps) {
           <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border">
             <div className="flex items-center gap-4">
               {likeCount > 0 && (
-                <LikedUsersPopover postId={post.id} likeCount={likeCount}>
-                  <span>{likeCount} {likeCount === 1 ? 'like' : 'likes'}</span>
+                <LikedUsersPopover
+                  postId={post.id}
+                  likeCount={likeCount}
+                  currentUserId={currentUserId}
+                  userLiked={liked}
+                >
+                  <span>
+                    {liked
+                      ? likeCount === 1
+                        ? 'You'
+                        : `You and ${likeCount - 1} other${likeCount - 1 === 1 ? '' : 's'}`
+                      : `${likeCount} ${likeCount === 1 ? 'like' : 'likes'}`}
+                  </span>
                 </LikedUsersPopover>
               )}
               {commentCount > 0 && <span>{commentCount} comments</span>}
@@ -276,9 +289,8 @@ export function PostCard({ post, currentUserId }: PostCardProps) {
         <div className="flex items-center justify-around pt-1">
           <Button
             variant="ghost"
-            className={`flex items-center gap-2 flex-1 ${
-              liked ? 'text-blue-500' : ''
-            }`}
+            className={`flex items-center gap-2 flex-1 ${liked ? 'text-blue-500' : ''
+              }`}
             onClick={() => toggleLikeMutation.mutate({ postId: post.id })}
             disabled={toggleLikeMutation.isPending}
           >
@@ -289,9 +301,8 @@ export function PostCard({ post, currentUserId }: PostCardProps) {
           </Button>
           <Button
             variant="ghost"
-            className={`flex items-center gap-2 flex-1 ${
-              showComments ? 'text-blue-500' : ''
-            }`}
+            className={`flex items-center gap-2 flex-1 ${showComments ? 'text-blue-500' : ''
+              }`}
             onClick={() => setShowComments(!showComments)}
           >
             <MessageCircle className="w-5 h-5" />
@@ -299,9 +310,8 @@ export function PostCard({ post, currentUserId }: PostCardProps) {
           </Button>
           <Button
             variant="ghost"
-            className={`flex items-center gap-2 flex-1 ${
-              shared ? 'text-green-500' : ''
-            }`}
+            className={`flex items-center gap-2 flex-1 ${shared ? 'text-green-500' : ''
+              }`}
             onClick={() => shareMutation.mutate({ postId: post.id })}
             disabled={shareMutation.isPending}
           >

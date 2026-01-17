@@ -11,6 +11,8 @@ import type {
   IPostRepository,
   INotificationRepository,
   IPushSubscriptionRepository,
+  IAlbumRepository,
+  IImageRepository,
 } from '../repositories/interfaces.js'
 import type { INotificationService } from '../services/interfaces.js'
 import type { User } from '../../types/auth.js'
@@ -38,6 +40,12 @@ export async function createContext(opts?: CreateExpressContextOptions) {
   )
   const pushSubscriptionRepository = container.get<IPushSubscriptionRepository>(
     RepositoryTypes.PushSubscriptionRepository,
+  )
+  const albumRepository = container.get<IAlbumRepository>(
+    RepositoryTypes.AlbumRepository,
+  )
+  const imageRepository = container.get<IImageRepository>(
+    RepositoryTypes.ImageRepository,
   )
   const notificationService = container.get<INotificationService>(
     ServiceTypes.NotificationService,
@@ -71,6 +79,8 @@ export async function createContext(opts?: CreateExpressContextOptions) {
     postRepository,
     notificationRepository,
     pushSubscriptionRepository,
+    albumRepository,
+    imageRepository,
     notificationService,
     user,
     isAuthenticated,

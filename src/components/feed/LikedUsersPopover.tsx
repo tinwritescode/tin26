@@ -8,12 +8,16 @@ type LikedUser = RouterOutput<'posts'>['getLikedUsers'][number]
 interface LikedUsersPopoverProps {
   postId: string
   likeCount: number
+  currentUserId: string
+  userLiked: boolean
   children: React.ReactNode
 }
 
 export function LikedUsersPopover({
   postId,
   likeCount,
+  currentUserId,
+  userLiked,
   children,
 }: LikedUsersPopoverProps) {
   const [open, setOpen] = useState(false)
@@ -65,27 +69,30 @@ export function LikedUsersPopover({
             {likeCount} {likeCount === 1 ? 'like' : 'likes'}
           </h4>
           <div className="space-y-2 max-h-[300px] overflow-y-auto">
-            {likedUsers.map((like) => (
-              <div
-                key={like.id}
-                className="flex items-center gap-2 py-1"
-              >
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-semibold flex-shrink-0">
-                  {like.user.avatar ? (
-                    <img
-                      src={like.user.avatar}
-                      alt={getDisplayName(like.user)}
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                  ) : (
-                    getInitials(like.user)
-                  )}
+            {likedUsers.map((like) => {
+              const isCurrentUser = like.userId === currentUserId
+              return (
+                <div
+                  key={like.id}
+                  className="flex items-center gap-2 py-1"
+                >
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-semibold flex-shrink-0">
+                    {like.user.avatar ? (
+                      <img
+                        src={like.user.avatar}
+                        alt={getDisplayName(like.user)}
+                        className="w-full h-full rounded-full object-cover"
+                      />
+                    ) : (
+                      getInitials(like.user)
+                    )}
+                  </div>
+                  <span className="text-sm text-foreground">
+                    {isCurrentUser ? 'You' : getDisplayName(like.user)}
+                  </span>
                 </div>
-                <span className="text-sm text-foreground">
-                  {getDisplayName(like.user)}
-                </span>
-              </div>
-            ))}
+              )
+            })}
             {remainingCount > 0 && (
               <div className="text-sm text-muted-foreground pt-1 border-t border-border">
                 and {remainingCount} more

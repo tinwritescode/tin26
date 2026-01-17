@@ -64,11 +64,10 @@ export function EditTemplateModal({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogPopup className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Edit Template</DialogTitle>
-        </DialogHeader>
-
         <Form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle>Edit Template</DialogTitle>
+          </DialogHeader>
           <DialogPanel>
             <Field>
               <FieldLabel>Template Name</FieldLabel>

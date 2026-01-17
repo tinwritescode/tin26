@@ -10,6 +10,7 @@ import {
   DialogTitle,
   DialogPanel,
 } from '../ui/dialog'
+import { Form } from '../ui/form'
 
 interface ProfileEditModalProps {
   user: {
@@ -70,11 +71,11 @@ export function ProfileEditModal({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Edit Profile</DialogTitle>
-        </DialogHeader>
-        <DialogPanel>
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <Form onSubmit={handleSubmit} className="space-y-4">
+          <DialogHeader>
+            <DialogTitle>Edit Profile</DialogTitle>
+          </DialogHeader>
+          <DialogPanel>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1.5">
@@ -194,8 +195,8 @@ export function ProfileEditModal({
               Save Changes
             </Button>
           </div>
-        </form>
-        </DialogPanel>
+          </DialogPanel>
+        </Form>
       </DialogContent>
     </Dialog>
   )
