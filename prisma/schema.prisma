@@ -18,6 +18,14 @@ enum HabitType {
   repeatable
 }
 
+enum NotificationType {
+  POST_LIKE
+  POST_COMMENT
+  POST_SHARE
+  HABIT_REMINDER
+  HABIT_ACHIEVEMENT
+}
+
 model User {
   id                String   @id @default(uuid())
   workosId          String   @unique
@@ -34,13 +42,15 @@ model User {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  appliedTemplate  HabitTemplate?    @relation("AppliedTemplate", fields: [appliedTemplateId], references: [id])
-  habitTemplates   HabitTemplate[]
-  habitCompletions HabitCompletion[]
-  posts            Post[]
-  postLikes        PostLike[]
-  postComments     PostComment[]
-  postShares       PostShare[]
+  appliedTemplate   HabitTemplate?     @relation("AppliedTemplate", fields: [appliedTemplateId], references: [id])
+  habitTemplates    HabitTemplate[]
+  habitCompletions  HabitCompletion[]
+  posts             Post[]
+  postLikes         PostLike[]
+  postComments      PostComment[]
+  postShares        PostShare[]
+  notifications     Notification[]
+  pushSubscriptions PushSubscription[]
 
   @@map("users")
 }
@@ -98,7 +108,7 @@ model Post {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   likes    PostLike[]
   comments PostComment[]
   shares   PostShare[]
@@ -144,4 +154,34 @@ model PostShare {
 
   @@unique([postId, userId])
   @@map("post_shares")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  read      Boolean          @default(false)
+  readAt    DateTime?
+  metadata  Json // Flexible JSON for postId, commentId, actorId, etc.
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, read])
+  @@map("notifications")
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  endpoint  String
+  keys      Json // Contains p256dh and auth keys
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, endpoint])
+  @@map("push_subscriptions")
 }

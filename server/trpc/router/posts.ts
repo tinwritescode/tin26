@@ -139,17 +139,41 @@ export const postsRouter = router({
   toggleLike: protectedProcedure
     .input(postIdSchema)
     .mutation(async ({ ctx, input }) => {
-      return ctx.postRepository.toggleLike(input.postId, ctx.user.id)
+      const result = await ctx.postRepository.toggleLike(input.postId, ctx.user.id)
+      
+      // Create notification if like was added (not removed)
+      if (result.liked) {
+        const post = await ctx.postRepository.findById(input.postId)
+        if (post && post.userId !== ctx.user.id) {
+          // Don't await - fire and forget
+          ctx.notificationService
+            .notifyPostLike(post.userId, ctx.user.id, input.postId)
+            .catch(console.error)
+        }
+      }
+      
+      return result
     }),
 
   addComment: protectedProcedure
     .input(addCommentSchema)
     .mutation(async ({ ctx, input }) => {
-      return ctx.postRepository.addComment(
+      const comment = await ctx.postRepository.addComment(
         input.postId,
         ctx.user.id,
         input.content,
       )
+      
+      // Create notification
+      const post = await ctx.postRepository.findById(input.postId)
+      if (post && post.userId !== ctx.user.id) {
+        // Don't await - fire and forget
+        ctx.notificationService
+          .notifyPostComment(post.userId, ctx.user.id, input.postId, comment.id)
+          .catch(console.error)
+      }
+      
+      return comment
     }),
 
   deleteComment: protectedProcedure
@@ -172,7 +196,20 @@ export const postsRouter = router({
   sharePost: protectedProcedure
     .input(postIdSchema)
     .mutation(async ({ ctx, input }) => {
-      return ctx.postRepository.share(input.postId, ctx.user.id)
+      const result = await ctx.postRepository.share(input.postId, ctx.user.id)
+      
+      // Create notification if share was added (not removed)
+      if (result.shared) {
+        const post = await ctx.postRepository.findById(input.postId)
+        if (post && post.userId !== ctx.user.id) {
+          // Don't await - fire and forget
+          ctx.notificationService
+            .notifyPostShare(post.userId, ctx.user.id, input.postId)
+            .catch(console.error)
+        }
+      }
+      
+      return result
     }),
 
   getPostInteractions: protectedProcedure
@@ -194,5 +231,30 @@ export const postsRouter = router({
         commentCount,
         shareCount,
       }
+    }),
+
+  getComments: protectedProcedure
+    .input(
+      postIdSchema.extend({
+        limit: z.number().int().min(1).max(100).default(20).optional(),
+        offset: z.number().int().min(0).default(0).optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      return ctx.postRepository.getComments(
+        input.postId,
+        input.limit,
+        input.offset,
+      )
+    }),
+
+  getLikedUsers: protectedProcedure
+    .input(
+      postIdSchema.extend({
+        limit: z.number().int().min(1).max(50).default(10).optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      return ctx.postRepository.getLikedUsers(input.postId, input.limit)
     }),
 })

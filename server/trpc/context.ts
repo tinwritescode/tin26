@@ -9,7 +9,10 @@ import type {
   IHabitRepository,
   IHabitCompletionRepository,
   IPostRepository,
+  INotificationRepository,
+  IPushSubscriptionRepository,
 } from '../repositories/interfaces.js'
+import type { INotificationService } from '../services/interfaces.js'
 import type { User } from '../../types/auth.js'
 
 export async function createContext(opts?: CreateExpressContextOptions) {
@@ -29,6 +32,15 @@ export async function createContext(opts?: CreateExpressContextOptions) {
   )
   const postRepository = container.get<IPostRepository>(
     RepositoryTypes.PostRepository,
+  )
+  const notificationRepository = container.get<INotificationRepository>(
+    RepositoryTypes.NotificationRepository,
+  )
+  const pushSubscriptionRepository = container.get<IPushSubscriptionRepository>(
+    RepositoryTypes.PushSubscriptionRepository,
+  )
+  const notificationService = container.get<INotificationService>(
+    ServiceTypes.NotificationService,
   )
 
   let user: User | null = null
@@ -57,6 +69,9 @@ export async function createContext(opts?: CreateExpressContextOptions) {
     habitRepository,
     habitCompletionRepository,
     postRepository,
+    notificationRepository,
+    pushSubscriptionRepository,
+    notificationService,
     user,
     isAuthenticated,
   }

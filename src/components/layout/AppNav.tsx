@@ -1,8 +1,9 @@
-import { Bell, Home, Search } from 'lucide-react'
+import { Home, Search } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { useAuth } from '../../common/hooks/useAuth'
 import { trpc } from '../../lib/trpc'
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar'
+import { NotificationDropdown } from './NotificationDropdown'
 import type { User } from '../../types/auth'
 
 export function AppNav() {
@@ -61,10 +62,7 @@ export function AppNav() {
 
           {/* Right: User Menu */}
           <div className="flex items-center gap-2">
-            <button className="p-2 rounded-full hover:bg-[#F0F2F5] transition-colors duration-200 cursor-pointer relative">
-              <Bell className="w-6 h-6 text-[#050505]" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-[#F02849] rounded-full"></span>
-            </button>
+            {user && <NotificationDropdown />}
             {user && (
               <div className="flex items-center gap-2 ml-2">
                 <Link

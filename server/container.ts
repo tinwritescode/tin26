@@ -10,6 +10,9 @@ import { HabitTemplateRepository } from './repositories/HabitTemplateRepository.
 import { HabitRepository } from './repositories/HabitRepository.js'
 import { HabitCompletionRepository } from './repositories/HabitCompletionRepository.js'
 import { PostRepository } from './repositories/PostRepository.js'
+import { NotificationRepository } from './repositories/NotificationRepository.js'
+import { PushSubscriptionRepository } from './repositories/PushSubscriptionRepository.js'
+import { NotificationService } from './services/NotificationService.js'
 import { AuthController } from './controllers/AuthController.js'
 import { HealthController } from './controllers/HealthController.js'
 import { prisma } from './db/prisma.js'
@@ -52,6 +55,22 @@ container
 container
   .bind<PostRepository>(RepositoryTypes.PostRepository)
   .to(PostRepository)
+  .inSingletonScope()
+container
+  .bind<NotificationRepository>(RepositoryTypes.NotificationRepository)
+  .to(NotificationRepository)
+  .inSingletonScope()
+container
+  .bind<PushSubscriptionRepository>(
+    RepositoryTypes.PushSubscriptionRepository,
+  )
+  .to(PushSubscriptionRepository)
+  .inSingletonScope()
+
+// Bind services as singletons
+container
+  .bind<NotificationService>(ServiceTypes.NotificationService)
+  .to(NotificationService)
   .inSingletonScope()
 
 // Bind controllers as singletons

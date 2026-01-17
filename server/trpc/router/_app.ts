@@ -4,6 +4,7 @@ import { authRouter } from './auth.js'
 import { habitsRouter } from './habits.js'
 import { profileRouter } from './profile.js'
 import { postsRouter } from './posts.js'
+import { notificationsRouter } from './notifications.js'
 
 export const appRouter = router({
   example: exampleRouter,
@@ -11,6 +12,7 @@ export const appRouter = router({
   habits: habitsRouter,
   profile: profileRouter,
   posts: postsRouter,
+  notifications: notificationsRouter,
 })
 
 export type AppRouter = typeof appRouter

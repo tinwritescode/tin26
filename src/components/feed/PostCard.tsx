@@ -5,6 +5,9 @@ import type { Post } from '../../types/posts'
 import { trpc } from '../../lib/trpc'
 import { formatRelativeTime } from '../../utils/time'
 import { useToast } from '@/components/ui/toast'
+import { CommentList } from './CommentList'
+import { CommentForm } from './CommentForm'
+import { LikedUsersPopover } from './LikedUsersPopover'
 
 interface PostCardProps {
   post: Post
@@ -17,6 +20,10 @@ export function PostCard({ post, currentUserId }: PostCardProps) {
   const [likeCount, setLikeCount] = useState(post._count.likes)
   const [commentCount, setCommentCount] = useState(post._count.comments)
   const [shareCount, setShareCount] = useState(post._count.shares)
+  const [showComments, setShowComments] = useState(false)
+  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(
+    null,
+  )
   const { toast } = useToast()
 
   const utils = trpc.useUtils()
@@ -101,6 +108,68 @@ export function PostCard({ post, currentUserId }: PostCardProps) {
       })
     },
   })
+
+  // Fetch comments when comments section is opened
+  const { data: comments = [], refetch: refetchComments } =
+    trpc.posts.getComments.useQuery(
+      { postId: post.id },
+      {
+        enabled: showComments,
+      },
+    )
+
+  const addCommentMutation = trpc.posts.addComment.useMutation({
+    onSuccess: async () => {
+      await refetchComments()
+      utils.posts.getPostInteractions.invalidate({ postId: post.id })
+      const interactions = await utils.posts.getPostInteractions.fetch({
+        postId: post.id,
+      })
+      if (interactions) {
+        setCommentCount(interactions.commentCount)
+      }
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to add comment',
+        variant: 'destructive',
+      })
+    },
+  })
+
+  const deleteCommentMutation = trpc.posts.deleteComment.useMutation({
+    onSuccess: async () => {
+      await refetchComments()
+      utils.posts.getPostInteractions.invalidate({ postId: post.id })
+      const interactions = await utils.posts.getPostInteractions.fetch({
+        postId: post.id,
+      })
+      if (interactions) {
+        setCommentCount(interactions.commentCount)
+      }
+      setDeletingCommentId(null)
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete comment',
+        variant: 'destructive',
+      })
+      setDeletingCommentId(null)
+    },
+  })
+
+  const handleAddComment = (content: string) => {
+    addCommentMutation.mutate({ postId: post.id, content })
+  }
+
+  const handleDeleteComment = (commentId: string) => {
+    if (confirm('Are you sure you want to delete this comment?')) {
+      setDeletingCommentId(commentId)
+      deleteCommentMutation.mutate({ commentId })
+    }
+  }
 
   const getInitials = (user: typeof post.user) => {
     if (user.firstName && user.lastName) {
@@ -190,7 +259,11 @@ export function PostCard({ post, currentUserId }: PostCardProps) {
         {(likeCount > 0 || commentCount > 0 || shareCount > 0) && (
           <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border">
             <div className="flex items-center gap-4">
-              {likeCount > 0 && <span>{likeCount} likes</span>}
+              {likeCount > 0 && (
+                <LikedUsersPopover postId={post.id} likeCount={likeCount}>
+                  <span>{likeCount} {likeCount === 1 ? 'like' : 'likes'}</span>
+                </LikedUsersPopover>
+              )}
               {commentCount > 0 && <span>{commentCount} comments</span>}
               {shareCount > 0 && <span>{shareCount} shares</span>}
             </div>
@@ -212,9 +285,15 @@ export function PostCard({ post, currentUserId }: PostCardProps) {
             <ThumbsUp
               className={`w-5 h-5 ${liked ? 'fill-current' : ''}`}
             />
-            <span className="text-sm font-medium">Like</span>
+            <span className="text-sm font-medium">{liked ? 'Liked' : 'Like'}</span>
           </Button>
-          <Button variant="ghost" className="flex items-center gap-2 flex-1">
+          <Button
+            variant="ghost"
+            className={`flex items-center gap-2 flex-1 ${
+              showComments ? 'text-blue-500' : ''
+            }`}
+            onClick={() => setShowComments(!showComments)}
+          >
             <MessageCircle className="w-5 h-5" />
             <span className="text-sm font-medium">Comment</span>
           </Button>
@@ -231,6 +310,22 @@ export function PostCard({ post, currentUserId }: PostCardProps) {
           </Button>
         </div>
       </div>
+
+      {/* Comments Section */}
+      {showComments && (
+        <div className="border-t border-border">
+          <CommentList
+            comments={comments}
+            currentUserId={currentUserId}
+            onDelete={handleDeleteComment}
+            deletingCommentId={deletingCommentId}
+          />
+          <CommentForm
+            onSubmit={handleAddComment}
+            isSubmitting={addCommentMutation.isPending}
+          />
+        </div>
+      )}
     </div>
   )
 }

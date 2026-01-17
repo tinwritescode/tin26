@@ -4,6 +4,7 @@ import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createTrpcClient, trpc } from './lib/trpc'
 import { AuthProvider } from './lib/auth'
+import { PushNotificationInitializer } from './components/layout/PushNotificationInitializer'
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
@@ -43,6 +44,7 @@ if (rootElement && !rootElement.innerHTML) {
       <AuthProvider>
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
+            <PushNotificationInitializer />
             <RouterProvider router={router} />
           </QueryClientProvider>
         </trpc.Provider>
@@ -56,16 +58,25 @@ if (rootElement && !rootElement.innerHTML) {
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals()
 
-// Register Service Worker for PWA
+// Register Service Worker for PWA (only in production)
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker
-      .register('/sw.js')
-      .then((registration) => {
-        console.log('Service Worker registered:', registration.scope)
+  if (import.meta.env.PROD) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker
+        .register('/sw.js')
+        .then((registration) => {
+          console.log('Service Worker registered:', registration.scope)
+        })
+        .catch((error) => {
+          console.log('Service Worker registration failed:', error)
+        })
+    })
+  } else {
+    // Unregister service worker in development to avoid interfering with HMR
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      registrations.forEach((registration) => {
+        registration.unregister()
       })
-      .catch((error) => {
-        console.log('Service Worker registration failed:', error)
-      })
-  })
+    })
+  }
 }

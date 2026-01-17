@@ -211,6 +211,13 @@ export type CommentWithAuthor = PostComment & {
   user: PrismaUser
 }
 
+export type LikeWithUser = {
+  id: string
+  userId: string
+  createdAt: Date
+  user: PrismaUser
+}
+
 export interface IPostRepository {
   findById: (id: string) => Promise<PostWithAuthor | null>
   findByUserId: (
@@ -256,4 +263,42 @@ export interface IPostRepository {
   getShareCount: (postId: string) => Promise<number>
   isLikedByUser: (postId: string, userId: string) => Promise<boolean>
   isSharedByUser: (postId: string, userId: string) => Promise<boolean>
+  getComments: (
+    postId: string,
+    limit?: number,
+    offset?: number,
+  ) => Promise<CommentWithAuthor[]>
+  getLikedUsers: (
+    postId: string,
+    limit?: number,
+  ) => Promise<LikeWithUser[]>
+}
+
+import type { Notification, NotificationType, PushSubscription } from '@prisma/client'
+
+export interface INotificationRepository {
+  create: (data: {
+    userId: string
+    type: NotificationType
+    metadata: Record<string, unknown>
+  }) => Promise<Notification>
+  findByUserId: (
+    userId: string,
+    limit?: number,
+    offset?: number,
+  ) => Promise<Notification[]>
+  markAsRead: (notificationId: string, userId: string) => Promise<Notification>
+  markAllAsRead: (userId: string) => Promise<{ count: number }>
+  getUnreadCount: (userId: string) => Promise<number>
+  delete: (notificationId: string, userId: string) => Promise<void>
+}
+
+export interface IPushSubscriptionRepository {
+  create: (data: {
+    userId: string
+    endpoint: string
+    keys: { p256dh: string; auth: string }
+  }) => Promise<PushSubscription>
+  findByUserId: (userId: string) => Promise<PushSubscription[]>
+  delete: (userId: string, endpoint: string) => Promise<void>
 }

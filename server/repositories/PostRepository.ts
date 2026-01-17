@@ -5,6 +5,7 @@ import type {
   IPostRepository,
   PostWithAuthor,
   CommentWithAuthor,
+  LikeWithUser,
 } from './interfaces.js'
 
 @injectable()
@@ -317,5 +318,43 @@ export class PostRepository implements IPostRepository {
     })
 
     return !!share
+  }
+
+  async getComments(
+    postId: string,
+    limit = 20,
+    offset = 0,
+  ): Promise<CommentWithAuthor[]> {
+    const comments = await this.prisma.postComment.findMany({
+      where: { postId },
+      include: {
+        user: true,
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+      take: limit,
+      skip: offset,
+    })
+
+    return comments as CommentWithAuthor[]
+  }
+
+  async getLikedUsers(
+    postId: string,
+    limit = 10,
+  ): Promise<LikeWithUser[]> {
+    const likes = await this.prisma.postLike.findMany({
+      where: { postId },
+      include: {
+        user: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: limit,
+    })
+
+    return likes as LikeWithUser[]
   }
 }

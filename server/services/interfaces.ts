@@ -25,3 +25,34 @@ export interface IJwtService {
   verifyToken: (token: string) => JWTPayload
   extractTokenFromHeader: (req: Request) => string | null
 }
+
+import type { Notification, NotificationType } from '@prisma/client'
+
+export interface INotificationService {
+  createNotification: (data: {
+    userId: string
+    type: NotificationType
+    metadata: Record<string, unknown>
+    sendPush?: boolean
+  }) => Promise<Notification>
+  sendPushNotification: (
+    userId: string,
+    notification: Notification,
+  ) => Promise<void>
+  notifyPostLike: (
+    postOwnerId: string,
+    actorId: string,
+    postId: string,
+  ) => Promise<Notification | null>
+  notifyPostComment: (
+    postOwnerId: string,
+    actorId: string,
+    postId: string,
+    commentId: string,
+  ) => Promise<Notification | null>
+  notifyPostShare: (
+    postOwnerId: string,
+    actorId: string,
+    postId: string,
+  ) => Promise<Notification | null>
+}

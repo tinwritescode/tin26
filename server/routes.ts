@@ -31,4 +31,14 @@ export function registerRoutes(app: Express): void {
 
   // Health check route
   app.get('/health', (req, res) => healthController.check(req, res))
+
+  // VAPID public key endpoint for push notifications
+  app.get('/api/vapid-public-key', (req, res) => {
+    const publicKey = process.env.VAPID_PUBLIC_KEY
+    if (publicKey) {
+      res.json({ publicKey })
+    } else {
+      res.status(503).json({ error: 'VAPID keys not configured' })
+    }
+  })
 }
