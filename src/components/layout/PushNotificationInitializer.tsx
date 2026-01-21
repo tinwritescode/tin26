@@ -3,7 +3,7 @@ import { useAuth } from '../../common/hooks/useAuth'
 import { useNotifications } from '../../common/hooks/useNotifications'
 import { subscribeToPushNotifications } from '../../lib/pushNotifications'
 
-const PushNotificationInitializer = () => {
+export const PushNotificationInitializer = memo(() => {
   const { getToken } = useAuth()
   const { subscribePush } = useNotifications()
   const hasToken = !!getToken()
@@ -31,6 +31,5 @@ const PushNotificationInitializer = () => {
   }, [hasToken, subscribePush])
 
   return null
-}
+})
 
-export default memo(PushNotificationInitializer)
