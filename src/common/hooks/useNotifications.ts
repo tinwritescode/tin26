@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { trpc } from '../../lib/trpc'
 
 export function useNotifications() {
@@ -69,14 +69,16 @@ export function useNotifications() {
 
   const subscribePushMutation = trpc.notifications.subscribePush.useMutation()
   const unsubscribePush = trpc.notifications.unsubscribePush.useMutation()
+  const subscribePushMutationRef = useRef(subscribePushMutation)
+  subscribePushMutationRef.current = subscribePushMutation
   const subscribePush = useCallback(
     async (subscription: {
       endpoint: string
       keys: { p256dh: string; auth: string }
     }) => {
-      await subscribePushMutation.mutateAsync(subscription)
+      await subscribePushMutationRef.current.mutateAsync(subscription)
     },
-    [subscribePushMutation],
+    [],
   )
 
   return {
