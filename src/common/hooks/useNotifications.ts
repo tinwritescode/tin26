@@ -4,7 +4,9 @@ import { trpc } from '../../lib/trpc'
 export function useNotifications() {
   const utils = trpc.useUtils()
   const [isWindowVisible, setIsWindowVisible] = useState(
-    typeof document !== 'undefined' ? document.visibilityState === 'visible' : true,
+    typeof document !== 'undefined'
+      ? document.visibilityState === 'visible'
+      : true,
   )
 
   // Track window visibility to only poll when active
@@ -67,6 +69,15 @@ export function useNotifications() {
 
   const subscribePushMutation = trpc.notifications.subscribePush.useMutation()
   const unsubscribePush = trpc.notifications.unsubscribePush.useMutation()
+  const subscribePush = useCallback(
+    async (subscription: {
+      endpoint: string
+      keys: { p256dh: string; auth: string }
+    }) => {
+      await subscribePushMutation.mutateAsync(subscription)
+    },
+    [subscribePushMutation],
+  )
 
   return {
     notifications,
@@ -78,13 +89,8 @@ export function useNotifications() {
     markAllAsRead: () => markAllAsRead.mutate(),
     deleteNotification: (notificationId: string) =>
       deleteNotification.mutate({ notificationId }),
-    subscribePush: useCallback(
-      (subscription: { endpoint: string; keys: { p256dh: string; auth: string } }) =>
-        subscribePushMutation.mutate(subscription),
-      [subscribePushMutation],
-    ),
-    unsubscribePush: (endpoint: string) =>
-      unsubscribePush.mutate({ endpoint }),
+    subscribePush,
+    unsubscribePush: (endpoint: string) => unsubscribePush.mutate({ endpoint }),
     refetchNotifications,
     refetchUnreadCount,
   }
