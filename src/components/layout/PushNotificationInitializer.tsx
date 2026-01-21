@@ -1,9 +1,9 @@
-import { useEffect } from 'react'
+import { memo, useEffect } from 'react'
 import { useAuth } from '../../common/hooks/useAuth'
 import { useNotifications } from '../../common/hooks/useNotifications'
 import { subscribeToPushNotifications } from '../../lib/pushNotifications'
 
-export function PushNotificationInitializer() {
+const PushNotificationInitializer = () => {
   const { getToken } = useAuth()
   const { subscribePush } = useNotifications()
   const hasToken = !!getToken()
@@ -32,3 +32,5 @@ export function PushNotificationInitializer() {
 
   return null
 }
+
+export default memo(PushNotificationInitializer)
